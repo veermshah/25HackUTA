@@ -97,18 +97,34 @@ def text_to_speech():
         model="gemini-2.5-flash",
         contents=f"You are a friendly, encouraging AI reading coach for 2nd–4th graders. You are given a list of words the student struggled with: {words}. Generate a short, motivational message (1–2 sentences) that: Acknowledges the student’s effort. Gently points out the words they struggled with. Encourages them to focus on those words in a positive, supportive tone. Sounds natural and friendly, like a personal coach. Example output: “Great job today! It looks like you had a little trouble with {words}, so let’s practice those together and get even better!”"
     )
-    motivational_message = remove_special_chars(response.text)
+    motivational_message = remove_special_chars(response.text).replace('\'', '')
     print("Motivational message:", motivational_message)
     try:
         # Initialize TTS client
+        client = texttospeech.TextToSpeechClient()
 
+        synthesis_input = texttospeech.SynthesisInput(text=motivational_message)
 
-        # audio_base64 = base64.b64encode(tts_response.audio_content).decode('utf-8')
+        voice = texttospeech.VoiceSelectionParams(
+            language_code="en-US",
+            name="en-US-Chirp-HD-F"
+        )
 
-        # print(motivational_message)
+        audio_config = texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.MP3
+        )
+
+        tts_response = client.synthesize_speech(
+            input=synthesis_input,
+            voice=voice,
+            audio_config=audio_config
+        )
+
+        audio_base64 = base64.b64encode(tts_response.audio_content).decode('utf-8')
+
+        print(motivational_message)
         # Use jsonify to ensure proper headers and CORS
-        # return {"message": motivational_message, "audio": audio_base64}, 200
-        return {"message": motivational_message}, 200
+        return {"message": motivational_message, "audio": audio_base64}, 200
     except Exception as e:
         print("Error during TTS:", str(e))
         return {"error": "TTS generation failed"}, 500
