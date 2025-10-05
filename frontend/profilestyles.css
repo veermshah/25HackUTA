@@ -685,7 +685,7 @@ body {
 }
 
 .goal-item.completed {
-    background: linear-gradient(135deg, var(--green), #7AB23A);
+    background: linear-gradient(135deg, var(--accent-coral), var(--dark-coral));
     color: white;
 }
 

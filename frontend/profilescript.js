@@ -209,7 +209,8 @@ const streakData = {
 
 document.addEventListener("DOMContentLoaded", async function () {
     try {
-        // Initialize streak tracking system
+        // Initialize systems
+        settingsData.init();
         streakData.init();
         
         await configureClient();
@@ -418,7 +419,7 @@ function initializeEventListeners() {
     });
 
     settingsBtn.addEventListener("click", () => {
-        alert("⚙️ Settings coming soon!");
+        showSettingsModal();
     });
 
     logoutBtn.addEventListener("click", async () => {
@@ -449,6 +450,9 @@ function initializeEventListeners() {
     logo.addEventListener("click", () => {
         window.location.href = "foxmode.html";
     });
+
+    // Initialize goals functionality
+    initializeGoals();
 }
 
 function showNotification(message) {
@@ -753,6 +757,788 @@ window.debugStreak = {
         console.log('Last practice:', streakData.lastPracticeDate);
     }
 };
+
+// Settings System
+const settingsData = {
+    settings: {
+        theme: 'light',
+        notifications: true,
+        soundEffects: true,
+        dailyGoal: 20,
+        difficulty: 'medium',
+        fontSize: 'medium',
+        autoSave: true,
+        practiceReminder: true,
+        streakNotifications: true,
+        celebrationAnimations: true
+    },
+    
+    init() {
+        const savedSettings = localStorage.getItem('dyslexicjit_settings');
+        if (savedSettings) {
+            this.settings = { ...this.settings, ...JSON.parse(savedSettings) };
+        }
+        this.applySettings();
+    },
+    
+    save() {
+        localStorage.setItem('dyslexicjit_settings', JSON.stringify(this.settings));
+        this.applySettings();
+    },
+    
+    updateSetting(key, value) {
+        this.settings[key] = value;
+        this.save();
+    },
+    
+    resetToDefaults() {
+        this.settings = {
+            theme: 'light',
+            notifications: true,
+            soundEffects: true,
+            dailyGoal: 20,
+            difficulty: 'medium',
+            fontSize: 'medium',
+            autoSave: true,
+            practiceReminder: true,
+            streakNotifications: true,
+            celebrationAnimations: true
+        };
+        this.save();
+    },
+    
+    applySettings() {
+        // Apply theme
+        document.body.setAttribute('data-theme', this.settings.theme);
+        
+        // Apply font size
+        document.body.setAttribute('data-font-size', this.settings.fontSize);
+        
+        // Update progress goal if needed
+        if (userData.todayProgress !== undefined) {
+            const progressText = document.querySelector('.progress-text');
+            if (progressText && this.settings.dailyGoal) {
+                const remaining = Math.max(0, this.settings.dailyGoal - (userData.totalWords || 0));
+                if (remaining > 0) {
+                    progressText.textContent = `${remaining} more words to complete today's goal!`;
+                } else {
+                    progressText.textContent = "🎉 Daily goal completed! Great job!";
+                }
+            }
+        }
+    }
+};
+
+function showSettingsModal() {
+    const modal = document.createElement('div');
+    modal.className = 'settings-modal';
+    modal.innerHTML = `
+        <div class="settings-modal-content">
+            <div class="settings-modal-header">
+                <h3><i class="fas fa-cog"></i> Settings</h3>
+                <button class="close-modal" onclick="this.closest('.settings-modal').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="settings-modal-body">
+                <div class="settings-tabs">
+                    <button class="settings-tab active" data-tab="general">General</button>
+                    <button class="settings-tab" data-tab="practice">Practice</button>
+                    <button class="settings-tab" data-tab="notifications">Notifications</button>
+                    <button class="settings-tab" data-tab="accessibility">Accessibility</button>
+                </div>
+                
+                <div class="settings-content">
+                    <div class="settings-panel active" data-panel="general">
+                        <div class="setting-group">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Theme</label>
+                                    <span class="setting-description">Choose your preferred color theme</span>
+                                </div>
+                                <select class="setting-control" data-setting="theme">
+                                    <option value="light" ${settingsData.settings.theme === 'light' ? 'selected' : ''}>Light</option>
+                                    <option value="dark" ${settingsData.settings.theme === 'dark' ? 'selected' : ''}>Dark</option>
+                                    <option value="auto" ${settingsData.settings.theme === 'auto' ? 'selected' : ''}>Auto</option>
+                                </select>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Sound Effects</label>
+                                    <span class="setting-description">Play sounds for interactions and achievements</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" data-setting="soundEffects" ${settingsData.settings.soundEffects ? 'checked' : ''}>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Auto Save Progress</label>
+                                    <span class="setting-description">Automatically save your reading progress</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" data-setting="autoSave" ${settingsData.settings.autoSave ? 'checked' : ''}>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-panel" data-panel="practice">
+                        <div class="setting-group">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Daily Words Goal</label>
+                                    <span class="setting-description">Number of words to practice each day</span>
+                                </div>
+                                <input type="number" class="setting-control" data-setting="dailyGoal" 
+                                       value="${settingsData.settings.dailyGoal}" min="5" max="100" step="5">
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Reading Difficulty</label>
+                                    <span class="setting-description">Adjust the complexity of reading materials</span>
+                                </div>
+                                <select class="setting-control" data-setting="difficulty">
+                                    <option value="easy" ${settingsData.settings.difficulty === 'easy' ? 'selected' : ''}>Easy</option>
+                                    <option value="medium" ${settingsData.settings.difficulty === 'medium' ? 'selected' : ''}>Medium</option>
+                                    <option value="hard" ${settingsData.settings.difficulty === 'hard' ? 'selected' : ''}>Hard</option>
+                                </select>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Practice Reminders</label>
+                                    <span class="setting-description">Get reminded when it's time to practice</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" data-setting="practiceReminder" ${settingsData.settings.practiceReminder ? 'checked' : ''}>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-panel" data-panel="notifications">
+                        <div class="setting-group">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Enable Notifications</label>
+                                    <span class="setting-description">Receive notifications for achievements and reminders</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" data-setting="notifications" ${settingsData.settings.notifications ? 'checked' : ''}>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Streak Notifications</label>
+                                    <span class="setting-description">Get notified about your reading streaks</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" data-setting="streakNotifications" ${settingsData.settings.streakNotifications ? 'checked' : ''}>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Celebration Animations</label>
+                                    <span class="setting-description">Show animations when completing goals</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" data-setting="celebrationAnimations" ${settingsData.settings.celebrationAnimations ? 'checked' : ''}>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-panel" data-panel="accessibility">
+                        <div class="setting-group">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Font Size</label>
+                                    <span class="setting-description">Adjust text size for better readability</span>
+                                </div>
+                                <select class="setting-control" data-setting="fontSize">
+                                    <option value="small" ${settingsData.settings.fontSize === 'small' ? 'selected' : ''}>Small</option>
+                                    <option value="medium" ${settingsData.settings.fontSize === 'medium' ? 'selected' : ''}>Medium</option>
+                                    <option value="large" ${settingsData.settings.fontSize === 'large' ? 'selected' : ''}>Large</option>
+                                    <option value="extra-large" ${settingsData.settings.fontSize === 'extra-large' ? 'selected' : ''}>Extra Large</option>
+                                </select>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>High Contrast Mode</label>
+                                    <span class="setting-description">Improve visibility with higher contrast</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" data-setting="highContrast" ${settingsData.settings.highContrast ? 'checked' : ''}>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-modal-actions">
+                <button class="btn-secondary" onclick="resetSettings()">Reset to Defaults</button>
+                <button class="btn-primary" onclick="this.closest('.settings-modal').remove()">Done</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setupSettingsEventListeners();
+}
+
+function setupSettingsEventListeners() {
+    // Tab switching
+    document.querySelectorAll('.settings-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.dataset.tab;
+            
+            // Update active tab
+            document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Update active panel
+            document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+            document.querySelector(`[data-panel="${tabName}"]`).classList.add('active');
+        });
+    });
+    
+    // Setting controls
+    document.querySelectorAll('[data-setting]').forEach(control => {
+        const settingName = control.dataset.setting;
+        
+        control.addEventListener('change', () => {
+            let value;
+            if (control.type === 'checkbox') {
+                value = control.checked;
+            } else if (control.type === 'number') {
+                value = parseInt(control.value);
+            } else {
+                value = control.value;
+            }
+            
+            settingsData.updateSetting(settingName, value);
+            showNotification(`✅ ${settingName.charAt(0).toUpperCase() + settingName.slice(1)} updated!`);
+        });
+    });
+}
+
+function resetSettings() {
+    if (confirm('Are you sure you want to reset all settings to their default values?')) {
+        settingsData.resetToDefaults();
+        document.querySelector('.settings-modal').remove();
+        showNotification('🔄 Settings reset to defaults!');
+    }
+}
+
+// Weekly Goals System
+const goalsData = {
+    goals: [],
+    
+    init() {
+        const savedGoals = localStorage.getItem('dyslexicjit_goals');
+        if (savedGoals) {
+            this.goals = JSON.parse(savedGoals);
+        } else {
+            // Initialize with default goals
+            this.goals = [
+                {
+                    id: 1,
+                    title: "Read 50 words",
+                    description: "Practice reading 50 words this week",
+                    target: 50,
+                    current: 50,
+                    type: "words",
+                    completed: true,
+                    createdAt: Date.now()
+                },
+                {
+                    id: 2,
+                    title: "Practice 5 days",
+                    description: "Complete reading practice for 5 days",
+                    target: 5,
+                    current: 3,
+                    type: "days",
+                    completed: false,
+                    createdAt: Date.now()
+                },
+                {
+                    id: 3,
+                    title: "Master 10 hard words",
+                    description: "Successfully read 10 challenging words",
+                    target: 10,
+                    current: 2,
+                    type: "words",
+                    completed: false,
+                    createdAt: Date.now()
+                }
+            ];
+            this.save();
+        }
+    },
+    
+    save() {
+        localStorage.setItem('dyslexicjit_goals', JSON.stringify(this.goals));
+    },
+    
+    addGoal(title, target, type = 'words') {
+        const newGoal = {
+            id: Date.now(),
+            title: title,
+            description: `Complete ${target} ${type} this week`,
+            target: target,
+            current: 0,
+            type: type,
+            completed: false,
+            createdAt: Date.now()
+        };
+        this.goals.push(newGoal);
+        this.save();
+        return newGoal;
+    },
+    
+    updateProgress(goalId, progress) {
+        const goal = this.goals.find(g => g.id === goalId);
+        if (goal && !goal.completed) {
+            goal.current = Math.min(progress, goal.target);
+            if (goal.current >= goal.target) {
+                goal.completed = true;
+                showNotification(`🎉 Goal completed: ${goal.title}!`);
+            }
+            this.save();
+            return goal;
+        }
+        return null;
+    },
+    
+    deleteGoal(goalId) {
+        this.goals = this.goals.filter(g => g.id !== goalId);
+        this.save();
+    },
+    
+    getProgress(goalId) {
+        const goal = this.goals.find(g => g.id === goalId);
+        return goal ? (goal.current / goal.target) * 100 : 0;
+    }
+};
+
+function initializeGoals() {
+    goalsData.init();
+    renderGoals();
+    setupGoalEventListeners();
+}
+
+function renderGoals() {
+    const goalsList = document.querySelector('.goals-list');
+    if (!goalsList) return;
+    
+    goalsList.innerHTML = '';
+    
+    goalsData.goals.forEach(goal => {
+        const goalElement = createGoalElement(goal);
+        goalsList.appendChild(goalElement);
+    });
+}
+
+function createGoalElement(goal) {
+    const progressPercent = Math.round((goal.current / goal.target) * 100);
+    const isCompleted = goal.completed;
+    const isActive = !isCompleted && goal.current > 0;
+    
+    const goalDiv = document.createElement('div');
+    goalDiv.className = `goal-item ${isCompleted ? 'completed' : (isActive ? 'active' : '')}`;
+    goalDiv.dataset.goalId = goal.id;
+    
+    let checkContent = '';
+    if (isCompleted) {
+        checkContent = '<i class="fas fa-check"></i>';
+    } else {
+        checkContent = `
+            <div class="goal-progress-ring">
+                <div class="goal-progress-fill" style="width: ${progressPercent}%"></div>
+            </div>
+        `;
+    }
+    
+    goalDiv.innerHTML = `
+        <div class="goal-check">
+            ${checkContent}
+        </div>
+        <div class="goal-content">
+            <div class="goal-title">${goal.title}</div>
+            <div class="goal-progress">${goal.current}/${goal.target} ${isCompleted ? 'completed' : 'done'}</div>
+        </div>
+        <button class="goal-action-btn" data-action="${isCompleted ? 'reset' : 'increment'}" title="${isCompleted ? 'Reset goal' : 'Add progress'}">
+            <i class="fas fa-${isCompleted ? 'redo' : 'plus'}"></i>
+        </button>
+    `;
+    
+    return goalDiv;
+}
+
+function setupGoalEventListeners() {
+    // Add new goal button
+    const addGoalBtn = document.querySelector('.goals-action-btn');
+    if (addGoalBtn) {
+        addGoalBtn.addEventListener('click', showAddGoalModal);
+    }
+    
+    // Goal action buttons (increment/reset)
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.goal-action-btn')) {
+            const btn = e.target.closest('.goal-action-btn');
+            const goalItem = btn.closest('.goal-item');
+            const goalId = parseInt(goalItem.dataset.goalId);
+            const action = btn.dataset.action;
+            
+            if (action === 'increment') {
+                incrementGoalProgress(goalId);
+            } else if (action === 'reset') {
+                resetGoal(goalId);
+            }
+        }
+    });
+    
+    // Goal settings button
+    const settingsBtn = document.querySelector('.goals-settings-btn');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', showGoalsSettings);
+    }
+}
+
+function incrementGoalProgress(goalId) {
+    const goal = goalsData.goals.find(g => g.id === goalId);
+    if (goal && !goal.completed) {
+        const newProgress = goal.current + 1;
+        goalsData.updateProgress(goalId, newProgress);
+        renderGoals();
+    }
+}
+
+function resetGoal(goalId) {
+    const goal = goalsData.goals.find(g => g.id === goalId);
+    if (goal) {
+        goal.current = 0;
+        goal.completed = false;
+        goalsData.save();
+        renderGoals();
+        showNotification(`🔄 Goal "${goal.title}" has been reset!`);
+    }
+}
+
+function showAddGoalModal() {
+    const modal = document.createElement('div');
+    modal.className = 'goal-modal';
+    modal.innerHTML = `
+        <div class="goal-modal-content">
+            <div class="goal-modal-header">
+                <h3>Add New Goal</h3>
+                <button class="close-modal" onclick="this.closest('.goal-modal').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="goal-modal-body">
+                <div class="form-group">
+                    <label for="goalTitle">Goal Title:</label>
+                    <input type="text" id="goalTitle" placeholder="e.g., Read 100 words" maxlength="50">
+                </div>
+                <div class="form-group">
+                    <label for="goalTarget">Target:</label>
+                    <input type="number" id="goalTarget" placeholder="e.g., 100" min="1" max="1000">
+                </div>
+                <div class="form-group">
+                    <label for="goalType">Type:</label>
+                    <select id="goalType">
+                        <option value="words">Words</option>
+                        <option value="days">Days</option>
+                        <option value="minutes">Minutes</option>
+                        <option value="stories">Stories</option>
+                    </select>
+                </div>
+            </div>
+            <div class="goal-modal-actions">
+                <button class="btn-secondary" onclick="this.closest('.goal-modal').remove()">Cancel</button>
+                <button class="btn-primary" onclick="createNewGoal()">Add Goal</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.getElementById('goalTitle').focus();
+}
+
+function createNewGoal() {
+    const title = document.getElementById('goalTitle').value.trim();
+    const target = parseInt(document.getElementById('goalTarget').value);
+    const type = document.getElementById('goalType').value;
+    
+    if (!title || !target || target < 1) {
+        alert('Please fill in all fields with valid values.');
+        return;
+    }
+    
+    goalsData.addGoal(title, target, type);
+    renderGoals();
+    document.querySelector('.goal-modal').remove();
+    showNotification(`✨ New goal "${title}" added!`);
+}
+
+function showGoalsSettings() {
+    const modal = document.createElement('div');
+    modal.className = 'goal-modal';
+    modal.innerHTML = `
+        <div class="goal-modal-content">
+            <div class="goal-modal-header">
+                <h3>Goals Settings</h3>
+                <button class="close-modal" onclick="this.closest('.goal-modal').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="goal-modal-body">
+                <div class="goals-settings-list">
+                    ${goalsData.goals.map(goal => `
+                        <div class="goal-setting-item">
+                            <div class="goal-info">
+                                <strong>${goal.title}</strong>
+                                <span class="goal-meta">${goal.current}/${goal.target} ${goal.type}</span>
+                            </div>
+                            <button class="delete-goal-btn" onclick="deleteGoal(${goal.id})" title="Delete goal">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="goal-modal-actions">
+                <button class="btn-primary" onclick="this.closest('.goal-modal').remove()">Done</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+function deleteGoal(goalId) {
+    const goal = goalsData.goals.find(g => g.id === goalId);
+    if (goal && confirm(`Are you sure you want to delete "${goal.title}"?`)) {
+        goalsData.deleteGoal(goalId);
+        renderGoals();
+        document.querySelector('.goal-modal').remove();
+        showNotification(`🗑️ Goal "${goal.title}" deleted!`);
+    }
+}
+
+// Add CSS for goal modals
+const goalModalStyles = document.createElement('style');
+goalModalStyles.textContent = `
+.goal-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.goal-modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.goal-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--light-orange);
+}
+
+.goal-modal-header h3 {
+    color: var(--primary-orange);
+    margin: 0;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    background: var(--light-orange);
+    color: var(--primary-orange);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--light-orange);
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+}
+
+.goal-modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--light-orange);
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--primary-orange);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--dark-orange);
+}
+
+.btn-secondary {
+    background: var(--light-orange);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--secondary-orange);
+}
+
+.goal-action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.goal-action-btn:hover {
+    background: var(--light-orange);
+    color: var(--primary-orange);
+}
+
+.goal-item.completed .goal-action-btn {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.goal-item.completed .goal-action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.goals-settings-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.goal-setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 10px;
+    background: var(--light-orange);
+    margin-bottom: 0.5rem;
+}
+
+.goal-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.goal-meta {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.delete-goal-btn {
+    background: var(--accent-coral);
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-goal-btn:hover {
+    background: var(--dark-coral);
+    transform: scale(1.1);
+}
+`;
+document.head.appendChild(goalModalStyles);
 
     console.log(
         "%c Welcome to DyslexicJit!",
