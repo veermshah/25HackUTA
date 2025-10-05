@@ -447,7 +447,7 @@ function initializeEventListeners() {
 
     const logo = document.querySelector(".nav-logo");
     logo.addEventListener("click", () => {
-        window.location.href = "profile.html";
+        window.location.href = "foxmode.html";
     });
 }
 

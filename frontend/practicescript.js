@@ -6,7 +6,7 @@ class ReadingPractice {
         this.currentWordIndex = 0;
         this.starsEarned = 0;
         this.isRecording = false;
-        this.calibrationComplete = false; // Track calibration state
+        this.calibrationComplete = true; // Track calibration state
         this.isCalibrating = false; // Track if currently calibrating
 
         // Practice content
@@ -868,7 +868,16 @@ class ReadingPractice {
 
     // Utility methods
     async recordAudio(button) {
+        // Prevent multiple recordings by checking if already recording
+        if (this.isRecording) {
+            console.log("🚫 Recording already in progress, ignoring click");
+            return null;
+        }
+
         try {
+            this.isRecording = true;
+            console.log("🎙️ Starting new recording session...");
+
             // Request microphone access
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: true,
@@ -886,55 +895,97 @@ class ReadingPractice {
 
             // Collect audio data
             mediaRecorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
+                if (event.data.size > 0) {
+                    audioChunks.push(event.data);
+                    console.log("📝 Audio data chunk received:", event.data.size, "bytes");
+                }
             };
 
             // Handle recording completion
             return new Promise((resolve, reject) => {
+                let isRecordingStopped = false;
+
+                const cleanup = () => {
+                    // Stop all tracks to release microphone
+                    stream.getTracks().forEach((track) => track.stop());
+                    this.isRecording = false; // Reset recording flag
+                    console.log("🧹 Cleanup completed, microphone released");
+                };
+
                 mediaRecorder.onstop = () => {
+                    if (isRecordingStopped) return; // Prevent multiple calls
+                    isRecordingStopped = true;
+
+                    console.log("🛑 MediaRecorder stopped, processing audio chunks...");
+                    console.log("📊 Total audio chunks:", audioChunks.length);
+
+                    if (audioChunks.length === 0) {
+                        console.error("❌ No audio data recorded");
+                        cleanup();
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                        reject(new Error("No audio data recorded"));
+                        return;
+                    }
+
                     const audioBlob = new Blob(audioChunks, {
                         type: "audio/mp3",
                     });
 
-                    // Stop all tracks to release microphone
-                    stream.getTracks().forEach((track) => track.stop());
+                    cleanup();
 
                     // Reset button
                     button.innerHTML = originalContent;
+                    button.disabled = false;
+                    
+                    console.log("🎙️ Recording stopped, audio blob created:", audioBlob.size, "bytes");
+                    console.log("✅ Recording session complete, ready for next recording");
                     resolve(audioBlob);
                 };
 
                 mediaRecorder.onerror = (event) => {
-                    // Stop all tracks to release microphone
-                    stream.getTracks().forEach((track) => track.stop());
+                    if (isRecordingStopped) return; // Prevent multiple calls
+                    isRecordingStopped = true;
+
+                    cleanup();
 
                     // Reset button
                     button.innerHTML = originalContent;
-                    reject(new Error("Recording failed"));
+                    button.disabled = false;
+                    
+                    console.error("🎙️ Recording error:", event.error);
+                    reject(new Error("Recording failed: " + event.error));
                 };
 
                 // Start recording
-                mediaRecorder.start();
+                mediaRecorder.start(1000); // Collect data every 1 second
+                console.log("🎙️ Recording started...");
 
                 // Stop recording when button is clicked again
-                const stopRecording = () => {
-                    if (mediaRecorder.state === "recording") {
-                        mediaRecorder.stop();
+                const stopRecording = (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    console.log("🛑 Stop button clicked, current state:", mediaRecorder.state);
+                    
+                    if (mediaRecorder.state === "recording" && !isRecordingStopped) {
+                        console.log("🎙️ Stopping recording...");
+                        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Stopping...</span>';
+                        button.disabled = true;
+                        
+                        // Remove the event listener immediately to prevent multiple clicks
                         button.removeEventListener("click", stopRecording);
+                        
+                        mediaRecorder.stop();
+                        console.log("🎙️ Recording stop requested by user");
                     }
                 };
 
+                // Add the stop recording listener
                 button.addEventListener("click", stopRecording);
-
-                // Auto-stop after 30 seconds
-                setTimeout(() => {
-                    if (mediaRecorder.state === "recording") {
-                        mediaRecorder.stop();
-                        button.removeEventListener("click", stopRecording);
-                    }
-                }, 30000);
             });
         } catch (error) {
+            this.isRecording = false; // Reset flag on error
             console.error("Error accessing microphone:", error);
             alert("Please allow microphone access to use this feature.");
             return null;
@@ -1494,4 +1545,3 @@ eyeTrackingStyle.textContent = `
     }
 `;
 document.head.appendChild(eyeTrackingStyle);
-
