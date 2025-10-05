@@ -6,21 +6,23 @@
 }
 
 :root {
-    /* Fox-Themed Orange Palette */
-    --primary-orange: #FF8C42;
-    --secondary-orange: #FFB366;
-    --dark-orange: #E67332;
-    --accent-coral: #FF6B35;
-    --dark-coral: #D45428;
-    --light-orange: #FFE5D4;
-    --cream: #FFF8F0;
+    /* New Color Palette */
+    --primary-orange: #F68E3F;
+    --secondary-orange: #FEF9CF;
+    --dark-orange: #D47533;
+    --accent-coral: #F289AB;
+    --dark-coral: #C26D8C;
+    --light-orange: #f9f0ea;
+    --cream: #f9f0ea;
+    --cyan: #67CDF6;
+    --green: #8AC641;
     --text-primary: #2D2D2D;
     --text-secondary: #5A5A5A;
-    --background: #FFFBF7;
+    --background: #f9f0ea;
     --card-background: #FFFFFF;
-    --border: #FFD4B8;
-    --shadow: 0 8px 16px rgba(255, 107, 53, 0.12);
-    --shadow-lg: 0 20px 40px rgba(255, 107, 53, 0.18);
+    --border: #FEF9CF;
+    --shadow: 0 8px 16px rgba(246, 142, 63, 0.12);
+    --shadow-lg: 0 20px 40px rgba(246, 142, 63, 0.18);
 }
 
 body {
@@ -106,7 +108,9 @@ body {
 /* Hero Section */
 .hero {
     padding: 140px 0 100px;
-    background: linear-gradient(180deg, rgba(255, 229, 212, 0.3) 0%, transparent 100%);
+    background: 
+        linear-gradient(180deg, rgba(255, 229, 212, 0.3) 0%, transparent 100%),
+        url('Assets/Background.gif') center/cover no-repeat;
     position: relative;
 }
 
@@ -121,7 +125,7 @@ body {
     font-weight: 800;
     line-height: 1.1;
     margin-bottom: 2rem;
-    color: var(--accent-coral);
+    color: var(--primary-orange);
     letter-spacing: -0.02em;
     max-width: 900px;
     margin-left: auto;
@@ -338,9 +342,15 @@ body {
 }
 
 .stat-icon {
-    font-size: 3.5rem;
+    font-size: 3.8125rem;
     margin-bottom: 1.5rem;
     display: block;
+}
+
+.stat-icon img {
+    width: 3.8125rem;
+    height: 3.8125rem;
+    object-fit: contain;
 }
 
 .stat-number {

@@ -3,16 +3,25 @@ let auth0Client = null;
 let currentUser = null;
 
 const configureClient = async () => {
-    const response = await fetch("./auth_config.json");
-    const config = await response.json();
+    try {
+        const response = await fetch("./auth_config.json");
+        if (!response.ok) {
+            throw new Error(`Failed to load config: ${response.status}`);
+        }
+        const config = await response.json();
 
-    auth0Client = await auth0.createAuth0Client({
-        domain: config.domain,
-        clientId: config.clientId,
-        authorizationParams: {
-            redirect_uri: window.location.origin + "/frontend/profile.html",
-        },
-    });
+        auth0Client = await auth0.createAuth0Client({
+            domain: config.domain,
+            clientId: config.clientId,
+            authorizationParams: {
+                redirect_uri: window.location.origin + "/frontend/profile.html",
+            },
+        });
+        console.log("Auth0 client configured successfully");
+    } catch (error) {
+        console.error("Error configuring Auth0 client:", error);
+        throw error;
+    }
 };
 
 const handleRedirectCallback = async () => {
@@ -40,11 +49,23 @@ const handleRedirectCallback = async () => {
 };
 
 const logout = async () => {
-    await auth0Client.logout({
-        logoutParams: {
-            returnTo: window.location.origin + "/frontend/index.html",
-        },
-    });
+    try {
+        if (auth0Client) {
+            await auth0Client.logout({
+                logoutParams: {
+                    returnTo: window.location.origin + "/frontend/index.html",
+                },
+            });
+        } else {
+            // Fallback if Auth0 client is not available
+            console.warn("Auth0 client not available, performing simple logout");
+            window.location.href = "index.html";
+        }
+    } catch (error) {
+        console.error("Error during logout:", error);
+        // Fallback to simple redirect
+        window.location.href = "index.html";
+    }
 };
 
 const userData = {
@@ -400,9 +421,15 @@ function initializeEventListeners() {
         alert("⚙️ Settings coming soon!");
     });
 
-    logoutBtn.addEventListener("click", () => {
+    logoutBtn.addEventListener("click", async () => {
         if (confirm("Are you sure you want to logout?")) {
-            logout();
+            try {
+                await logout();
+            } catch (error) {
+                console.error("Error during logout:", error);
+                // Force redirect as fallback
+                window.location.href = "index.html";
+            }
         }
     });
 

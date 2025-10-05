@@ -6,25 +6,27 @@
 }
 
 :root {
-    /* Fox-Themed Orange Palette */
-    --primary-orange: #FF8C42;
-    --secondary-orange: #FFB366;
-    --dark-orange: #E67332;
-    --accent-coral: #FF6B35;
-    --dark-coral: #D45428;
-    --light-orange: #FFE5D4;
-    --cream: #FFF8F0;
+    /* New Color Palette */
+    --primary-orange: #F68E3F;
+    --secondary-orange: #FEF9CF;
+    --dark-orange: #D47533;
+    --accent-coral: #F289AB;
+    --dark-coral: #C26D8C;
+    --light-orange: #f9f0ea;
+    --cream: #f9f0ea;
+    --cyan: #67CDF6;
+    --green: #8AC641;
     --text-primary: #2D2D2D;
     --text-secondary: #5A5A5A;
-    --background: #FFFBF7;
+    --background: #f9f0ea;
     --card-background: #FFFFFF;
-    --border: #FFD4B8;
-    --shadow: 0 4px 12px rgba(255, 107, 53, 0.08);
-    --shadow-md: 0 8px 16px rgba(255, 107, 53, 0.12);
-    --shadow-lg: 0 12px 24px rgba(255, 107, 53, 0.15);
-    --success-green: #4CAF50;
-    --warning-yellow: #FFC107;
-    --error-red: #F44336;
+    --border: #FEF9CF;
+    --shadow: 0 4px 12px rgba(246, 142, 63, 0.08);
+    --shadow-md: 0 8px 16px rgba(246, 142, 63, 0.12);
+    --shadow-lg: 0 12px 24px rgba(246, 142, 63, 0.15);
+    --success-green: #8AC641;
+    --warning-yellow: #FEF9CF;
+    --error-red: #F289AB;
 }
 
 body {
@@ -103,7 +105,7 @@ body {
 
 .nav-btn:hover {
     background: var(--light-orange);
-    color: var(--accent-coral);
+    color: var(--primary-orange);
 }
 
 /* Main Layout */
@@ -172,6 +174,31 @@ body {
 
 .stat-icon {
     font-size: 2.5rem;
+}
+
+.stat-icon img {
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: contain;
+}
+
+.feedback-icon-img,
+.celebration-icon-img,
+.hint-icon-img {
+    width: 2.3125rem;
+    height: 2.3125rem;
+    object-fit: contain;
+}
+
+.celebration-icon-img {
+    width: 5.3125rem;
+    height: 5.3125rem;
+}
+
+.hint-icon-img {
+    width: 1.8125rem;
+    height: 1.8125rem;
+    margin-right: 0.5rem;
 }
 
 .stat-info {
@@ -328,22 +355,22 @@ body {
 }
 
 .audio-btn {
-    background: var(--primary-orange);
+    background: var(--cyan);
     color: white;
 }
 
 .audio-btn:hover {
-    background: var(--dark-orange);
+    background: #4BA8D6;
     transform: translateY(-2px);
 }
 
 .practice-btn {
-    background: var(--accent-coral);
+    background: var(--primary-orange);
     color: white;
 }
 
 .practice-btn:hover {
-    background: var(--dark-coral);
+    background: var(--dark-orange);
     transform: translateY(-2px);
 }
 

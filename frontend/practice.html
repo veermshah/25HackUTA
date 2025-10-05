@@ -21,7 +21,8 @@
         <nav class="navbar">
             <div class="nav-container">
                 <div class="nav-logo">
-                    <img src="Assets/Title.svg" alt="DyslexicJit" class="logo-image">
+                    <span class="logo-icon">🦊</span>
+                    <span class="logo-text">WhatDoesDaFoxSay</span>
                 </div>
                 <div class="nav-actions">
                     <button
@@ -47,7 +48,9 @@
             <section class="welcome-screen" id="welcomeScreen">
                 <div class="welcome-content">
                     <div class="fox-coach">
-                        <!-- <div class="fox-mascot">🦊</div> -->
+                        <div class="fox-mascot">
+                            <img src="Assets/Untitled_Artwork.gif" alt="Fox mascot" class="fox-gif">
+                        </div>
                         <div class="coach-message">
                             <h1>Ready for Reading Practice?</h1>
                             <p>Let's work on reading a fun story together! Take your time and don't worry about mistakes.</p>
@@ -60,6 +63,28 @@
                     </button>
                 </div>
             </section>
+        <main class="practice-main">
+            <div class="container">
+                <!-- Welcome Screen -->
+                <section class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-content">
+                        <div class="fox-coach">
+                            <div class="fox-mascot">🦊</div>
+                            <div class="coach-message">
+                                <h1>Ready for Reading Practice?</h1>
+                                <p>
+                                    First, we'll calibrate eye tracking to help monitor your reading progress.
+                                    Then we'll work on reading a fun story together!
+                                </p>
+                            </div>
+                        </div>
+
+                        <button class="start-btn" id="startBtn">
+                            <i class="fas fa-eye"></i>
+                            <span>Start Calibration</span>
+                        </button>
+                    </div>
+                </section>
 
                 <!-- Practice Interface -->
                 <section
@@ -74,17 +99,17 @@
                                 class="progress-step active"
                                 data-stage="paragraph"
                             >
-                                <div class="step-icon">📖</div>
+                                <div class="step-icon"><img src="Assets/Books.png" alt="Reading" class="step-icon-img"></div>
                                 <div class="step-label">Paragraph</div>
                             </div>
                             <div class="progress-line"></div>
                             <div class="progress-step" data-stage="sentence">
-                                <div class="step-icon">📝</div>
+                                <div class="step-icon"><img src="Assets/Target.png" alt="Sentence" class="step-icon-img"></div>
                                 <div class="step-label">Sentence</div>
                             </div>
                             <div class="progress-line"></div>
                             <div class="progress-step" data-stage="word">
-                                <div class="step-icon">🔤</div>
+                                <div class="step-icon"><img src="Assets/Lightnight.png" alt="Word" class="step-icon-img"></div>
                                 <div class="step-label">Word</div>
                             </div>
                         </div>
@@ -139,7 +164,7 @@
                                 style="display: none"
                             >
                                 <div class="feedback-content">
-                                    <div class="feedback-icon">🎉</div>
+                                    <div class="feedback-icon"><img src="Assets/Star.png" alt="Great job!" class="feedback-icon-img"></div>
                                     <div class="feedback-text">
                                         <h4>Great reading!</h4>
                                         <p>
@@ -209,7 +234,7 @@
                                     style="display: none"
                                 >
                                     <div class="feedback-content">
-                                        <div class="feedback-icon">👍</div>
+                                        <div class="feedback-icon"><img src="Assets/Target.png" alt="Perfect!" class="feedback-icon-img"></div>
                                         <div class="feedback-text">
                                             <h4>Perfect!</h4>
                                             <p>
@@ -318,7 +343,7 @@
                                     style="display: none"
                                 >
                                     <div class="feedback-content">
-                                        <div class="feedback-icon">⭐</div>
+                                        <div class="feedback-icon"><img src="Assets/Star.png" alt="Excellent!" class="feedback-icon-img"></div>
                                         <div class="feedback-text">
                                             <h4>Excellent!</h4>
                                             <p>
@@ -355,7 +380,7 @@
                         style="display: none"
                     >
                         <div class="completion-card">
-                            <div class="celebration-icon">🎉</div>
+                            <div class="celebration-icon"><img src="Assets/Star.png" alt="Celebration!" class="celebration-icon-img"></div>
                             <h2>Practice Complete!</h2>
                             <p>
                                 You did an amazing job reading today! You've
@@ -411,7 +436,7 @@
         <div class="hint-modal" id="hintModal" style="display: none">
             <div class="hint-content">
                 <div class="hint-header">
-                    <h3>💡 Word Hint</h3>
+                    <h3><img src="Assets/Lightnight.png" alt="Hint" class="hint-icon-img"> Word Hint</h3>
                     <button class="close-hint" id="closeHint">
                         <i class="fas fa-times"></i>
                     </button>
