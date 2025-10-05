@@ -12,6 +12,7 @@ import base64
 from datetime import datetime, date, timedelta
 from elevenlabs.client import ElevenLabs
 from elevenlabs.play import play
+from pydantic import BaseModel
 
 load_dotenv()
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
@@ -123,6 +124,80 @@ def text_to_speech():
     except Exception as e:
         print("Error during TTS:", str(e))
         return {"error": "TTS generation failed"}, 500
+
+@app.route('/stt', methods=['POST'])
+def speech_to_text():
+    if "file" not in request.files:
+        return {"error": "No file provided"}, 404
+    audio_file = request.files["file"]
+
+    try:
+        data = request.form.get("json")
+        data = json.loads(data)
+    except:
+        data = None
+
+    if data is None:
+        return {"error": "No data provided"}, 400
+
+    try:
+        generated = data["generated"]
+    except:
+        return {"error": "No generation provided"}, 400
+    print(generated)
+
+    # Else process query
+    client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+
+    transcript = client.speech_to_text.convert(
+        file=audio_file,
+        model_id="scribe_v1"  # or "scribe_v1_experimental"
+    )
+    print(transcript.text)
+
+    class Words(BaseModel):
+        words: list[str]
+
+    # Generate motivational message
+    response = gemini_client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=f"""
+        You are comparing two sentences word by word.
+
+        Goal:
+        Identify *only* the words from the GENERATED text that were either:
+        - misread,
+        - omitted, 
+        - said in the wrong order, or
+        - replaced with filler sounds ("um", "uh", etc.)
+        in the TRANSCRIBED text.
+
+        Return the result as a pure JSON array of strings — just the specific words the student *did not say correctly*.
+
+        Rules:
+        - Do NOT include words that match exactly.
+        - Do NOT explain or add commentary.
+        - If there are no issues, return an empty array: [].
+        - Compare case-insensitively.
+        - Treat punctuation as irrelevant.
+
+        Example:
+        Generated: "The quick brown fox jumps over the lazy dog."
+        Transcribed: "The quick fox jump over lazy dog um"
+        → Output: ["brown", "jumps", "the"]
+
+        Now process:
+        Generated: {generated}
+        Transcribed: {transcript.text}
+            """,
+        config={
+            "response_mime_type": "application/json",
+            "response_schema": Words,
+        },
+    )
+    print(response.text)
+
+    return response.text, 200
 
 @app.route('/data/users', methods=['GET'])
 def get_users():
