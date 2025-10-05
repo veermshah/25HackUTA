@@ -21,7 +21,8 @@
         <nav class="navbar">
             <div class="nav-container">
                 <div class="nav-logo">
-                    <img src="Assets/Title.svg" alt="DyslexicJit" class="logo-image">
+                    <span class="logo-icon">🦊</span>
+                    <span class="logo-text">WhatDoesDaFoxSay</span>
                 </div>
                 <div class="nav-actions">
                     <button
@@ -41,25 +42,28 @@
             </div>
         </nav>
 
-    <main class="practice-main">
-        <div class="container">
-            <!-- Welcome Screen -->
-            <section class="welcome-screen" id="welcomeScreen">
-                <div class="welcome-content">
-                    <div class="fox-coach">
-                        <!-- <div class="fox-mascot">🦊</div> -->
-                        <div class="coach-message">
-                            <h1>Ready for Reading Practice?</h1>
-                            <p>Let's work on reading a fun story together! Take your time and don't worry about mistakes.</p>
+        <main class="practice-main">
+            <div class="container">
+                <!-- Welcome Screen -->
+                <section class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-content">
+                        <div class="fox-coach">
+                            <div class="fox-mascot">🦊</div>
+                            <div class="coach-message">
+                                <h1>Ready for Reading Practice?</h1>
+                                <p>
+                                    First, we'll calibrate eye tracking to help monitor your reading progress.
+                                    Then we'll work on reading a fun story together!
+                                </p>
+                            </div>
                         </div>
+
+                        <button class="start-btn" id="startBtn">
+                            <i class="fas fa-eye"></i>
+                            <span>Start Calibration</span>
+                        </button>
                     </div>
-                   
-                    <button class="start-btn" id="startBtn">
-                        <i class="fas fa-play"></i>
-                        <span>Start Reading Practice</span>
-                    </button>
-                </div>
-            </section>
+                </section>
 
                 <!-- Practice Interface -->
                 <section
@@ -187,13 +191,13 @@
                                 </div>
 
                                 <div class="sentence-controls">
-                                    <button
+                                    <!--<button
                                         class="control-btn audio-btn"
                                         id="sentenceAudioBtn"
                                     >
                                         <i class="fas fa-volume-up"></i>
                                         <span>Listen</span>
-                                    </button>
+                                    </button>-->
                                     <button
                                         class="control-btn record-btn"
                                         id="sentenceRecordBtn"
@@ -296,13 +300,12 @@
                                         <i class="fas fa-lightbulb"></i>
                                         <span>Get Hint</span>
                                     </button>
-                                    <button
+                                    <!--<button
                                         class="control-btn audio-btn"
-                                        id="wordAudioBtn"
-                                    >
+                                        id="wordAudioBtn">
                                         <i class="fas fa-volume-up"></i>
                                         <span>Listen</span>
-                                    </button>
+                                    </button>-->
                                     <button
                                         class="control-btn record-btn"
                                         id="wordRecordBtn"

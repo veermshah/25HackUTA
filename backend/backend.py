@@ -133,7 +133,12 @@ def speech_to_text():
 
     try:
         data = request.form.get("json")
-        data = json.loads(data)
+        try:
+            print(data)
+            data = json.loads(data)
+        except:
+            print({"generated": data})
+            data = {"generated": data}
     except:
         data = None
 
