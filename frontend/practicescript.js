@@ -349,6 +349,7 @@ class ReadingPractice {
             formData.append("file", audioBlob, "recording.mp3");
             formData.append("json", this.paragraph);
 
+            console.log("📤 Sending audio to STT API...");
             const sttResponse = await fetch(`${baseUrl}/stt`, {
                 method: "POST",
                 body: formData,
@@ -359,8 +360,36 @@ class ReadingPractice {
             }
 
             const sttData = await sttResponse.json();
+            console.log("✅ STT response received:", sttData);
+
+            // Call TTS API with the recognized words
+            if (sttData.words) {
+                console.log("🔊 Calling TTS API with words:", sttData.words);
+                
+                const ttsResponse = await fetch(`${baseUrl}/tts`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        words: sttData.words
+                    }),
+                });
+
+                if (ttsResponse.ok) {
+                    // Get base64 audio from TTS response
+                    const ttsData = await ttsResponse.json();
+                    
+                    console.log("🎵 Playing TTS audio feedback...");
+                    const audio = new Audio("data:audio/mp3;base64," + ttsData.audio);
+                    audio.play();
+                } else {
+                    console.warn("⚠️ TTS API failed, continuing without audio feedback");
+                }
+            }
 
             // Use the words from STT response to generate sentences
+            console.log("📝 Generating sentences from recognized words...");
             const sentenceResponse = await fetch(
                 `${baseUrl}/generate?q=sentence`,
                 {
@@ -381,6 +410,7 @@ class ReadingPractice {
             }
 
             const sentenceData = await sentenceResponse.json();
+            console.log("✅ Sentence generation complete:", sentenceData);
 
             // Update sentences
             if (sentenceData && sentenceData.sentences) {
@@ -396,6 +426,18 @@ class ReadingPractice {
             return true;
         } catch (error) {
             console.error("Error generating sentences from recording:", error);
+            
+            // Log more detailed error information
+            if (error.message.includes('Failed to fetch')) {
+                console.error("❌ Backend server is not running at http://127.0.0.1:5001");
+            } else if (error.message.includes('Speech-to-text failed')) {
+                console.error("❌ STT API error:", error.message);
+            } else if (error.message.includes('Sentence generation failed')) {
+                console.error("❌ Sentence generation API error:", error.message);
+            } else {
+                console.error("❌ Unexpected error:", error.message);
+            }
+            
             return false;
         }
     }
@@ -438,9 +480,20 @@ class ReadingPractice {
             }
 
             const wordData = await wordResponse.json();
+            console.log("✅ Word generation complete:", wordData);
 
-            // Update words
-            if (wordData && wordData.words) {
+            // Handle the new API response format: {"text": "asingleword"}
+            if (wordData && wordData.text) {
+                // Create a single word object for the word stage
+                this.words = [{
+                    word: wordData.text,
+                    phonetics: `/${wordData.text}/`,
+                    meaning: `Practice word: ${wordData.text}`,
+                    context: `Focus on the word '${wordData.text}'`,
+                    hint: `Think about the word '${wordData.text}' and practice saying it slowly.`,
+                }];
+            } else if (wordData && wordData.words) {
+                // Fallback for old format
                 this.words = wordData.words.map((wordInfo, index) => {
                     if (typeof wordInfo === "string") {
                         return {
@@ -632,10 +685,23 @@ class ReadingPractice {
 
                 if (success) {
                     this.paragraphFeedback.style.display = "block";
+                    
+                    // Update feedback text
+                    const feedbackTextElement = this.paragraphFeedback.querySelector('.feedback-text h4');
+                    if (feedbackTextElement) {
+                        feedbackTextElement.textContent = "Great Reading!";
+                    }
+                    const feedbackDescElement = this.paragraphFeedback.querySelector('.feedback-text p');
+                    if (feedbackDescElement) {
+                        feedbackDescElement.textContent = "Continue to Sentences";
+                    }
+                    
                     this.starsEarned += 3;
                 } else {
+                    // Provide more specific error message
+                    console.error("❌ generateSentencesFromRecording failed");
                     alert(
-                        "Sorry, there was an error processing your recording. Using default sentences."
+                        "Sorry, there was an error processing your recording. Please check that the backend server is running at http://127.0.0.1:5001. Using default sentences."
                     );
                 }
 
@@ -703,7 +769,19 @@ class ReadingPractice {
                 );
 
                 if (success) {
+                    // Show feedback with updated text
                     this.sentenceFeedback.style.display = "block";
+                    
+                    // Update feedback text to show "Perfect! Continue to words"
+                    const feedbackTextElement = this.sentenceFeedback.querySelector('.feedback-text h4');
+                    if (feedbackTextElement) {
+                        feedbackTextElement.textContent = "Perfect!";
+                    }
+                    const feedbackDescElement = this.sentenceFeedback.querySelector('.feedback-text p');
+                    if (feedbackDescElement) {
+                        feedbackDescElement.textContent = "Continue to words";
+                    }
+                    
                     this.starsEarned += 2;
                 } else {
                     alert(
@@ -740,7 +818,7 @@ class ReadingPractice {
             if (
                 this.words &&
                 this.words.length > 0 &&
-                this.words[0].word !== "explore"
+                (this.words[0].word !== "explore" || this.words.length === 1)
             ) {
                 this.showWordStage();
             } else {
@@ -775,13 +853,19 @@ class ReadingPractice {
 
         this.wordFeedback.style.display = "none";
 
-        // Update navigation buttons
+        // Update navigation buttons - for single word, always show "Finish Practice"
         this.prevWord.style.display =
             this.currentWordIndex > 0 ? "flex" : "none";
-        this.nextWord.textContent =
-            this.currentWordIndex < this.words.length - 1
-                ? "Next Word"
-                : "Finish Practice";
+        
+        // If we only have one word (new API format), always show "Finish Practice"
+        if (this.words.length === 1) {
+            this.nextWord.textContent = "Finish Practice";
+        } else {
+            this.nextWord.textContent =
+                this.currentWordIndex < this.words.length - 1
+                    ? "Next Word"
+                    : "Finish Practice";
+        }
     }
 
     showWordHint() {
@@ -810,19 +894,26 @@ class ReadingPractice {
         try {
             const audioBlob = await this.recordAudio(this.wordRecordBtn);
             if (audioBlob) {
-                // Show processing state
-                this.wordRecordBtn.innerHTML =
-                    '<i class="fas fa-spinner fa-spin"></i><span>Processing...</span>';
-                this.wordRecordBtn.disabled = true;
-
-                // For word practice, we just show feedback (no additional API call needed)
+                // For word practice, we immediately show feedback without processing
+                // No API call needed for the final word stage
                 this.wordFeedback.style.display = "block";
+                
+                // Update feedback text to show completion
+                const feedbackTextElement = this.wordFeedback.querySelector('.feedback-text h4');
+                if (feedbackTextElement) {
+                    feedbackTextElement.textContent = "Excellent!";
+                }
+                const feedbackDescElement = this.wordFeedback.querySelector('.feedback-text p');
+                if (feedbackDescElement) {
+                    feedbackDescElement.textContent = "Lesson completed!";
+                }
+                
                 this.starsEarned += 1;
 
-                // Reset button
-                this.wordRecordBtn.innerHTML =
-                    '<i class="fas fa-microphone"></i><span>Try Again</span>';
-                this.wordRecordBtn.disabled = false;
+                // Change the "Next Word" button to "Finish Practice" since this is the final stage
+                if (this.nextWord) {
+                    this.nextWord.textContent = "Finish Practice";
+                }
             }
         } catch (error) {
             console.error("Error recording word:", error);
@@ -990,6 +1081,38 @@ class ReadingPractice {
             alert("Please allow microphone access to use this feature.");
             return null;
         }
+    }
+
+    async playAudioBlob(audioBlob) {
+        return new Promise((resolve, reject) => {
+            try {
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                
+                audio.onended = () => {
+                    URL.revokeObjectURL(audioUrl);
+                    console.log("🎵 TTS audio playback complete");
+                    resolve();
+                };
+                
+                audio.onerror = (error) => {
+                    URL.revokeObjectURL(audioUrl);
+                    console.error("🎵 Audio playback error:", error);
+                    reject(error);
+                };
+                
+                audio.play().catch(error => {
+                    URL.revokeObjectURL(audioUrl);
+                    console.error("🎵 Audio play failed:", error);
+                    reject(error);
+                });
+                
+                console.log("🎵 Playing TTS audio feedback...");
+            } catch (error) {
+                console.error("🎵 Error creating audio:", error);
+                reject(error);
+            }
+        });
     }
 
     simulateAudioPlayback(button, playingText, normalText) {

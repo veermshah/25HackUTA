@@ -119,7 +119,7 @@ def text_to_speech():
         audio_bytes = b"".join(audio_bytes)
         audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
 
-        print(audio_bytes)
+        print(audio_base64)
         return {"message": motivational_message, "audio": audio_base64}, 200
     except Exception as e:
         print("Error during TTS:", str(e))
