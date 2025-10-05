@@ -1,301 +1,341 @@
 // Reading Practice Script
 class ReadingPractice {
     constructor() {
-        this.currentStage = 'paragraph';
+        this.currentStage = "paragraph";
         this.currentSentenceIndex = 0;
         this.currentWordIndex = 0;
         this.starsEarned = 0;
         this.isRecording = false;
-        
+
         // Practice content
-        this.paragraph = "The brave little fox loved to explore the forest every morning. She would walk along the winding paths, listening to the birds sing their beautiful songs. Sometimes she would find interesting rocks or colorful flowers that made her day special. The fox knew that reading books was just like exploring the forest - every page held new adventures and discoveries waiting to be found.";
-        
+        this.paragraph =
+            "The brave little fox loved to explore the forest every morning. She would walk along the winding paths, listening to the birds sing their beautiful songs. Sometimes she would find interesting rocks or colorful flowers that made her day special. The fox knew that reading books was just like exploring the forest - every page held new adventures and discoveries waiting to be found.";
+
         this.sentences = [
             "The brave little fox loved to explore the forest every morning.",
             "She would walk along the winding paths, listening to the birds sing their beautiful songs.",
             "Sometimes she would find interesting rocks or colorful flowers that made her day special.",
-            "The fox knew that reading books was just like exploring the forest - every page held new adventures and discoveries waiting to be found."
+            "The fox knew that reading books was just like exploring the forest - every page held new adventures and discoveries waiting to be found.",
         ];
-        
+
         this.words = [
             {
                 word: "explore",
                 phonetics: "/ɪkˈsplɔːr/",
-                meaning: "To travel through or investigate a place to learn about it",
+                meaning:
+                    "To travel through or investigate a place to learn about it",
                 context: "...loved to explore the forest...",
-                hint: "Think of 'ex' (out) + 'plore' (like explore a new place)"
+                hint: "Think of 'ex' (out) + 'plore' (like explore a new place)",
             },
             {
                 word: "winding",
                 phonetics: "/ˈwaɪn.dɪŋ/",
                 meaning: "Having many curves and turns",
                 context: "...along the winding paths...",
-                hint: "Think of 'wind' (like the wind blowing in curves) + 'ing'"
+                hint: "Think of 'wind' (like the wind blowing in curves) + 'ing'",
             },
             {
                 word: "listening",
                 phonetics: "/ˈlɪs.ən.ɪŋ/",
                 meaning: "Giving attention with the ear to hear sounds",
                 context: "...listening to the birds...",
-                hint: "Think of 'listen' + 'ing' (the action of hearing)"
+                hint: "Think of 'listen' + 'ing' (the action of hearing)",
             },
             {
                 word: "beautiful",
                 phonetics: "/ˈbjuː.tɪ.fəl/",
                 meaning: "Pleasing the senses or mind aesthetically",
                 context: "...sing their beautiful songs...",
-                hint: "Think of 'beauty' + 'ful' (full of beauty)"
+                hint: "Think of 'beauty' + 'ful' (full of beauty)",
             },
             {
                 word: "interesting",
                 phonetics: "/ˈɪn.trə.stɪŋ/",
                 meaning: "Arousing curiosity or interest",
                 context: "...find interesting rocks...",
-                hint: "Think of 'interest' + 'ing' (causing interest)"
+                hint: "Think of 'interest' + 'ing' (causing interest)",
             },
             {
                 word: "adventures",
                 phonetics: "/ədˈven.tʃərz/",
                 meaning: "Exciting or unusual experiences",
                 context: "...new adventures and discoveries...",
-                hint: "Think of 'adventure' + 's' (more than one adventure)"
-            }
+                hint: "Think of 'adventure' + 's' (more than one adventure)",
+            },
         ];
-        
+
         this.initializeElements();
         this.bindEvents();
     }
-    
+
     initializeElements() {
         // Screen elements
-        this.welcomeScreen = document.getElementById('welcomeScreen');
-        this.practiceInterface = document.getElementById('practiceInterface');
-        
+        this.welcomeScreen = document.getElementById("welcomeScreen");
+        this.practiceInterface = document.getElementById("practiceInterface");
+
         // Progress elements
-        this.progressSteps = document.querySelectorAll('.progress-step');
-        this.currentStageEl = document.getElementById('currentStage');
-        
+        this.progressSteps = document.querySelectorAll(".progress-step");
+        this.currentStageEl = document.getElementById("currentStage");
+
         // Stage elements
-        this.paragraphStage = document.getElementById('paragraphStage');
-        this.sentenceStage = document.getElementById('sentenceStage');
-        this.wordStage = document.getElementById('wordStage');
-        this.completeStage = document.getElementById('completeStage');
-        
+        this.paragraphStage = document.getElementById("paragraphStage");
+        this.sentenceStage = document.getElementById("sentenceStage");
+        this.wordStage = document.getElementById("wordStage");
+        this.completeStage = document.getElementById("completeStage");
+
         // Paragraph elements
-        this.paragraphText = document.getElementById('paragraphText');
-        this.paragraphAudioBtn = document.getElementById('paragraphAudioBtn');
-        this.paragraphRecordBtn = document.getElementById('paragraphRecordBtn');
-        this.paragraphFeedback = document.getElementById('paragraphFeedback');
-        this.nextToSentence = document.getElementById('nextToSentence');
-        
+        this.paragraphText = document.getElementById("paragraphText");
+        this.paragraphAudioBtn = document.getElementById("paragraphAudioBtn");
+        this.paragraphRecordBtn = document.getElementById("paragraphRecordBtn");
+        this.paragraphFeedback = document.getElementById("paragraphFeedback");
+        this.nextToSentence = document.getElementById("nextToSentence");
+
         // Sentence elements
-        this.sentenceCounter = document.getElementById('sentenceCounter');
-        this.currentSentenceEl = document.getElementById('currentSentence');
-        this.sentenceAudioBtn = document.getElementById('sentenceAudioBtn');
-        this.sentenceRecordBtn = document.getElementById('sentenceRecordBtn');
-        this.sentenceFeedback = document.getElementById('sentenceFeedback');
-        this.prevSentence = document.getElementById('prevSentence');
-        this.nextSentence = document.getElementById('nextSentence');
-        
+        this.sentenceCounter = document.getElementById("sentenceCounter");
+        this.currentSentenceEl = document.getElementById("currentSentence");
+        this.sentenceAudioBtn = document.getElementById("sentenceAudioBtn");
+        this.sentenceRecordBtn = document.getElementById("sentenceRecordBtn");
+        this.sentenceFeedback = document.getElementById("sentenceFeedback");
+        this.prevSentence = document.getElementById("prevSentence");
+        this.nextSentence = document.getElementById("nextSentence");
+
         // Word elements
-        this.wordCounter = document.getElementById('wordCounter');
-        this.practiceWord = document.getElementById('practiceWord');
-        this.wordPhonetics = document.getElementById('wordPhonetics');
-        this.wordHintBtn = document.getElementById('wordHintBtn');
-        this.wordAudioBtn = document.getElementById('wordAudioBtn');
-        this.wordRecordBtn = document.getElementById('wordRecordBtn');
-        this.wordFeedback = document.getElementById('wordFeedback');
-        this.prevWord = document.getElementById('prevWord');
-        this.nextWord = document.getElementById('nextWord');
-        
+        this.wordCounter = document.getElementById("wordCounter");
+        this.practiceWord = document.getElementById("practiceWord");
+        this.wordPhonetics = document.getElementById("wordPhonetics");
+        this.wordHintBtn = document.getElementById("wordHintBtn");
+        this.wordAudioBtn = document.getElementById("wordAudioBtn");
+        this.wordRecordBtn = document.getElementById("wordRecordBtn");
+        this.wordFeedback = document.getElementById("wordFeedback");
+        this.prevWord = document.getElementById("prevWord");
+        this.nextWord = document.getElementById("nextWord");
+
         // Completion elements
-        this.totalWords = document.getElementById('totalWords');
-        this.totalSentences = document.getElementById('totalSentences');
-        this.starsEarnedEl = document.getElementById('starsEarned');
-        this.practiceAgain = document.getElementById('practiceAgain');
-        this.backToProfile = document.getElementById('backToProfile');
-        
+        this.totalWords = document.getElementById("totalWords");
+        this.totalSentences = document.getElementById("totalSentences");
+        this.starsEarnedEl = document.getElementById("starsEarned");
+        this.practiceAgain = document.getElementById("practiceAgain");
+        this.backToProfile = document.getElementById("backToProfile");
+
         // Navigation elements
-        this.backBtn = document.getElementById('backBtn');
-        this.homeBtn = document.getElementById('homeBtn');
-        this.settingsBtn = document.getElementById('settingsBtn');
-        
+        this.backBtn = document.getElementById("backBtn");
+        this.homeBtn = document.getElementById("homeBtn");
+        this.settingsBtn = document.getElementById("settingsBtn");
+
         // Modal elements
-        this.hintModal = document.getElementById('hintModal');
-        this.closeHint = document.getElementById('closeHint');
-        this.hintBody = document.getElementById('hintBody');
-        
+        this.hintModal = document.getElementById("hintModal");
+        this.closeHint = document.getElementById("closeHint");
+        this.hintBody = document.getElementById("hintBody");
+
         // Start button
-        this.startBtn = document.getElementById('startBtn');
+        this.startBtn = document.getElementById("startBtn");
     }
-    
+
     bindEvents() {
         // Start button
-        this.startBtn.addEventListener('click', () => this.startPractice());
-        
+        this.startBtn.addEventListener("click", () => this.startPractice());
+
         // Navigation
-        this.backBtn.addEventListener('click', () => this.goBack());
-        this.homeBtn.addEventListener('click', () => this.goHome());
-        this.settingsBtn.addEventListener('click', () => this.openSettings());
-        
+        this.backBtn.addEventListener("click", () => this.goBack());
+        this.homeBtn.addEventListener("click", () => this.goHome());
+        this.settingsBtn.addEventListener("click", () => this.openSettings());
+
         // Paragraph stage
-        this.paragraphAudioBtn.addEventListener('click', () => this.playParagraphAudio());
-        this.paragraphRecordBtn.addEventListener('click', () => this.recordParagraph());
-        this.nextToSentence.addEventListener('click', () => this.moveToSentenceStage());
-        
+        this.paragraphAudioBtn.addEventListener("click", () =>
+            this.playParagraphAudio()
+        );
+        this.paragraphRecordBtn.addEventListener("click", () =>
+            this.recordParagraph()
+        );
+        this.nextToSentence.addEventListener("click", () =>
+            this.moveToSentenceStage()
+        );
+
         // Sentence stage
-        this.sentenceAudioBtn.addEventListener('click', () => this.playSentenceAudio());
-        this.sentenceRecordBtn.addEventListener('click', () => this.recordSentence());
-        this.prevSentence.addEventListener('click', () => this.previousSentence());
-        this.nextSentence.addEventListener('click', () => this.nextSentenceHandler());
-        
+        this.sentenceAudioBtn.addEventListener("click", () =>
+            this.playSentenceAudio()
+        );
+        this.sentenceRecordBtn.addEventListener("click", () =>
+            this.recordSentence()
+        );
+        this.prevSentence.addEventListener("click", () =>
+            this.previousSentence()
+        );
+        this.nextSentence.addEventListener("click", () =>
+            this.nextSentenceHandler()
+        );
+
         // Word stage
-        this.wordHintBtn.addEventListener('click', () => this.showWordHint());
-        this.wordAudioBtn.addEventListener('click', () => this.playWordAudio());
-        this.wordRecordBtn.addEventListener('click', () => this.recordWord());
-        this.prevWord.addEventListener('click', () => this.previousWord());
-        this.nextWord.addEventListener('click', () => this.nextWordHandler());
-        
+        this.wordHintBtn.addEventListener("click", () => this.showWordHint());
+        this.wordAudioBtn.addEventListener("click", () => this.playWordAudio());
+        this.wordRecordBtn.addEventListener("click", () => this.recordWord());
+        this.prevWord.addEventListener("click", () => this.previousWord());
+        this.nextWord.addEventListener("click", () => this.nextWordHandler());
+
         // Completion
-        this.practiceAgain.addEventListener('click', () => this.restartPractice());
-        this.backToProfile.addEventListener('click', () => this.goToProfile());
-        
+        this.practiceAgain.addEventListener("click", () =>
+            this.restartPractice()
+        );
+        this.backToProfile.addEventListener("click", () => this.goToProfile());
+
         // Modal
-        this.closeHint.addEventListener('click', () => this.hideHint());
-        this.hintModal.addEventListener('click', (e) => {
+        this.closeHint.addEventListener("click", () => this.hideHint());
+        this.hintModal.addEventListener("click", (e) => {
             if (e.target === this.hintModal) this.hideHint();
         });
-        
+
         // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+        document.addEventListener("keydown", (e) => this.handleKeyboard(e));
     }
-    
+
     startPractice() {
-        this.welcomeScreen.style.display = 'none';
-        this.practiceInterface.style.display = 'block';
+        this.welcomeScreen.style.display = "none";
+        this.practiceInterface.style.display = "block";
         this.showParagraphStage();
         this.updateProgress();
+
+        // Initialize eye tracking when practice starts
+        initializeEyeTracking();
     }
-    
+
     updateProgress() {
         this.progressSteps.forEach((step, index) => {
             const stage = step.dataset.stage;
-            step.className = 'progress-step';
-            
+            step.className = "progress-step";
+
             if (stage === this.currentStage) {
-                step.classList.add('active');
+                step.classList.add("active");
             } else if (this.isStageCompleted(stage)) {
-                step.classList.add('completed');
+                step.classList.add("completed");
             } else {
-                step.classList.add('pending');
+                step.classList.add("pending");
             }
         });
-        
+
         // Update stage indicator
         const stageNames = {
-            paragraph: 'Paragraph Reading',
-            sentence: 'Sentence Practice',
-            word: 'Word Focus'
+            paragraph: "Paragraph Reading",
+            sentence: "Sentence Practice",
+            word: "Word Focus",
         };
-        this.currentStageEl.textContent = stageNames[this.currentStage] || 'Practice Complete';
+        this.currentStageEl.textContent =
+            stageNames[this.currentStage] || "Practice Complete";
     }
-    
+
     isStageCompleted(stage) {
         switch (stage) {
-            case 'paragraph':
-                return this.currentStage !== 'paragraph';
-            case 'sentence':
-                return this.currentStage === 'word' || this.currentStage === 'complete';
-            case 'word':
-                return this.currentStage === 'complete';
+            case "paragraph":
+                return this.currentStage !== "paragraph";
+            case "sentence":
+                return (
+                    this.currentStage === "word" ||
+                    this.currentStage === "complete"
+                );
+            case "word":
+                return this.currentStage === "complete";
             default:
                 return false;
         }
     }
-    
+
     showParagraphStage() {
-        this.currentStage = 'paragraph';
+        this.currentStage = "paragraph";
         this.hideAllStages();
-        this.paragraphStage.style.display = 'block';
+        this.paragraphStage.style.display = "block";
         this.updateProgress();
     }
-    
+
     showSentenceStage() {
-        this.currentStage = 'sentence';
+        this.currentStage = "sentence";
         this.hideAllStages();
-        this.sentenceStage.style.display = 'block';
+        this.sentenceStage.style.display = "block";
         this.updateSentenceDisplay();
         this.updateProgress();
     }
-    
+
     showWordStage() {
-        this.currentStage = 'word';
+        this.currentStage = "word";
         this.hideAllStages();
-        this.wordStage.style.display = 'block';
+        this.wordStage.style.display = "block";
         this.updateWordDisplay();
         this.updateProgress();
     }
-    
+
     showCompleteStage() {
-        this.currentStage = 'complete';
+        this.currentStage = "complete";
         this.hideAllStages();
-        this.completeStage.style.display = 'block';
+        this.completeStage.style.display = "block";
         this.updateCompletionStats();
         this.updateProgress();
     }
-    
+
     hideAllStages() {
-        this.paragraphStage.style.display = 'none';
-        this.sentenceStage.style.display = 'none';
-        this.wordStage.style.display = 'none';
-        this.completeStage.style.display = 'none';
+        this.paragraphStage.style.display = "none";
+        this.sentenceStage.style.display = "none";
+        this.wordStage.style.display = "none";
+        this.completeStage.style.display = "none";
     }
-    
+
     // Paragraph stage methods
     playParagraphAudio() {
-        this.simulateAudioPlayback(this.paragraphAudioBtn, 'Playing story...', 'Listen to Story');
+        this.simulateAudioPlayback(
+            this.paragraphAudioBtn,
+            "Playing story...",
+            "Listen to Story"
+        );
     }
-    
+
     recordParagraph() {
         this.simulateRecording(this.paragraphRecordBtn, () => {
-            this.paragraphFeedback.style.display = 'block';
+            this.paragraphFeedback.style.display = "block";
             this.starsEarned += 3;
         });
     }
-    
+
     moveToSentenceStage() {
         this.showSentenceStage();
     }
-    
+
     // Sentence stage methods
     updateSentenceDisplay() {
-        this.sentenceCounter.textContent = `Sentence ${this.currentSentenceIndex + 1} of ${this.sentences.length}`;
-        this.currentSentenceEl.textContent = this.sentences[this.currentSentenceIndex];
-        this.sentenceFeedback.style.display = 'none';
-        
+        this.sentenceCounter.textContent = `Sentence ${
+            this.currentSentenceIndex + 1
+        } of ${this.sentences.length}`;
+        this.currentSentenceEl.textContent =
+            this.sentences[this.currentSentenceIndex];
+        this.sentenceFeedback.style.display = "none";
+
         // Update navigation buttons
-        this.prevSentence.style.display = this.currentSentenceIndex > 0 ? 'flex' : 'none';
-        this.nextSentence.textContent = this.currentSentenceIndex < this.sentences.length - 1 ? 'Next Sentence' : 'Continue to Words';
+        this.prevSentence.style.display =
+            this.currentSentenceIndex > 0 ? "flex" : "none";
+        this.nextSentence.textContent =
+            this.currentSentenceIndex < this.sentences.length - 1
+                ? "Next Sentence"
+                : "Continue to Words";
     }
-    
+
     playSentenceAudio() {
-        this.simulateAudioPlayback(this.sentenceAudioBtn, 'Playing sentence...', 'Listen');
+        this.simulateAudioPlayback(
+            this.sentenceAudioBtn,
+            "Playing sentence...",
+            "Listen"
+        );
     }
-    
+
     recordSentence() {
         this.simulateRecording(this.sentenceRecordBtn, () => {
-            this.sentenceFeedback.style.display = 'block';
+            this.sentenceFeedback.style.display = "block";
             this.starsEarned += 2;
         });
     }
-    
+
     previousSentence() {
         if (this.currentSentenceIndex > 0) {
             this.currentSentenceIndex--;
             this.updateSentenceDisplay();
         }
     }
-    
+
     nextSentenceHandler() {
         if (this.currentSentenceIndex < this.sentences.length - 1) {
             this.currentSentenceIndex++;
@@ -304,16 +344,18 @@ class ReadingPractice {
             this.showWordStage();
         }
     }
-    
+
     // Word stage methods
     updateWordDisplay() {
         const word = this.words[this.currentWordIndex];
-        this.wordCounter.textContent = `Word ${this.currentWordIndex + 1} of ${this.words.length}`;
+        this.wordCounter.textContent = `Word ${this.currentWordIndex + 1} of ${
+            this.words.length
+        }`;
         this.practiceWord.textContent = word.word;
         this.wordPhonetics.textContent = word.phonetics;
-        
+
         // Update word info
-        const wordInfo = this.wordStage.querySelector('.word-info');
+        const wordInfo = this.wordStage.querySelector(".word-info");
         wordInfo.innerHTML = `
             <div class="word-meaning">
                 <h4>Meaning:</h4>
@@ -324,14 +366,18 @@ class ReadingPractice {
                 <p>${word.context}</p>
             </div>
         `;
-        
-        this.wordFeedback.style.display = 'none';
-        
+
+        this.wordFeedback.style.display = "none";
+
         // Update navigation buttons
-        this.prevWord.style.display = this.currentWordIndex > 0 ? 'flex' : 'none';
-        this.nextWord.textContent = this.currentWordIndex < this.words.length - 1 ? 'Next Word' : 'Finish Practice';
+        this.prevWord.style.display =
+            this.currentWordIndex > 0 ? "flex" : "none";
+        this.nextWord.textContent =
+            this.currentWordIndex < this.words.length - 1
+                ? "Next Word"
+                : "Finish Practice";
     }
-    
+
     showWordHint() {
         const word = this.words[this.currentWordIndex];
         this.hintBody.innerHTML = `
@@ -339,31 +385,35 @@ class ReadingPractice {
             <p><strong>Break it down:</strong> Try to sound out each part of the word slowly.</p>
             <p><strong>Remember:</strong> Take your time and don't worry about being perfect!</p>
         `;
-        this.hintModal.style.display = 'flex';
+        this.hintModal.style.display = "flex";
     }
-    
+
     hideHint() {
-        this.hintModal.style.display = 'none';
+        this.hintModal.style.display = "none";
     }
-    
+
     playWordAudio() {
-        this.simulateAudioPlayback(this.wordAudioBtn, 'Playing word...', 'Listen');
+        this.simulateAudioPlayback(
+            this.wordAudioBtn,
+            "Playing word...",
+            "Listen"
+        );
     }
-    
+
     recordWord() {
         this.simulateRecording(this.wordRecordBtn, () => {
-            this.wordFeedback.style.display = 'block';
+            this.wordFeedback.style.display = "block";
             this.starsEarned += 1;
         });
     }
-    
+
     previousWord() {
         if (this.currentWordIndex > 0) {
             this.currentWordIndex--;
             this.updateWordDisplay();
         }
     }
-    
+
     nextWordHandler() {
         if (this.currentWordIndex < this.words.length - 1) {
             this.currentWordIndex++;
@@ -372,45 +422,47 @@ class ReadingPractice {
             this.showCompleteStage();
         }
     }
-    
+
     // Completion methods
     updateCompletionStats() {
         this.totalWords.textContent = this.words.length;
         this.totalSentences.textContent = this.sentences.length;
         this.starsEarnedEl.textContent = this.starsEarned;
     }
-    
+
     restartPractice() {
-        this.currentStage = 'paragraph';
+        this.currentStage = "paragraph";
         this.currentSentenceIndex = 0;
         this.currentWordIndex = 0;
         this.starsEarned = 0;
-        
+
         this.showParagraphStage();
-        this.paragraphFeedback.style.display = 'none';
+        this.paragraphFeedback.style.display = "none";
         this.updateProgress();
     }
-    
+
     // Utility methods
     simulateAudioPlayback(button, playingText, normalText) {
         const originalContent = button.innerHTML;
         button.innerHTML = `<i class="fas fa-volume-up"></i><span>${playingText}</span>`;
         button.disabled = true;
-        
+
         setTimeout(() => {
             button.innerHTML = originalContent;
             button.disabled = false;
         }, 2000);
     }
-    
+
     simulateRecording(button, callback) {
         const originalContent = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-stop"></i><span>Recording...</span>';
+        button.innerHTML =
+            '<i class="fas fa-stop"></i><span>Recording...</span>';
         button.disabled = true;
-        
+
         setTimeout(() => {
-            button.innerHTML = '<i class="fas fa-microphone"></i><span>Processing...</span>';
-            
+            button.innerHTML =
+                '<i class="fas fa-microphone"></i><span>Processing...</span>';
+
             setTimeout(() => {
                 button.innerHTML = originalContent;
                 button.disabled = false;
@@ -418,70 +470,91 @@ class ReadingPractice {
             }, 1500);
         }, 2000);
     }
-    
+
     // Navigation methods
     goBack() {
         window.history.back();
     }
-    
+
     goHome() {
-        window.location.href = 'profile.html';
+        window.location.href = "profile.html";
     }
-    
+
     goToProfile() {
-        window.location.href = 'profile.html';
+        window.location.href = "profile.html";
     }
-    
+
     openSettings() {
-        console.log('Settings clicked');
+        console.log("Settings clicked");
     }
-    
+
     // Keyboard shortcuts
     handleKeyboard(e) {
-        switch(e.key) {
-            case ' ':
+        switch (e.key) {
+            case " ":
                 e.preventDefault();
-                if (this.currentStage === 'paragraph' && this.paragraphRecordBtn.style.display !== 'none') {
+                if (
+                    this.currentStage === "paragraph" &&
+                    this.paragraphRecordBtn.style.display !== "none"
+                ) {
                     this.recordParagraph();
-                } else if (this.currentStage === 'sentence' && this.sentenceRecordBtn.style.display !== 'none') {
+                } else if (
+                    this.currentStage === "sentence" &&
+                    this.sentenceRecordBtn.style.display !== "none"
+                ) {
                     this.recordSentence();
-                } else if (this.currentStage === 'word' && this.wordRecordBtn.style.display !== 'none') {
+                } else if (
+                    this.currentStage === "word" &&
+                    this.wordRecordBtn.style.display !== "none"
+                ) {
                     this.recordWord();
                 }
                 break;
-            case 'h':
+            case "h":
                 e.preventDefault();
-                if (this.currentStage === 'word') {
+                if (this.currentStage === "word") {
                     this.showWordHint();
                 }
                 break;
-            case 'a':
+            case "a":
                 e.preventDefault();
-                if (this.currentStage === 'paragraph') {
+                if (this.currentStage === "paragraph") {
                     this.playParagraphAudio();
-                } else if (this.currentStage === 'sentence') {
+                } else if (this.currentStage === "sentence") {
                     this.playSentenceAudio();
-                } else if (this.currentStage === 'word') {
+                } else if (this.currentStage === "word") {
                     this.playWordAudio();
                 }
                 break;
-            case 'ArrowRight':
+            case "ArrowRight":
                 e.preventDefault();
-                if (this.currentStage === 'sentence' && this.nextSentence.style.display !== 'none') {
+                if (
+                    this.currentStage === "sentence" &&
+                    this.nextSentence.style.display !== "none"
+                ) {
                     this.nextSentenceHandler();
-                } else if (this.currentStage === 'word' && this.nextWord.style.display !== 'none') {
+                } else if (
+                    this.currentStage === "word" &&
+                    this.nextWord.style.display !== "none"
+                ) {
                     this.nextWordHandler();
                 }
                 break;
-            case 'ArrowLeft':
+            case "ArrowLeft":
                 e.preventDefault();
-                if (this.currentStage === 'sentence' && this.prevSentence.style.display !== 'none') {
+                if (
+                    this.currentStage === "sentence" &&
+                    this.prevSentence.style.display !== "none"
+                ) {
                     this.previousSentence();
-                } else if (this.currentStage === 'word' && this.prevWord.style.display !== 'none') {
+                } else if (
+                    this.currentStage === "word" &&
+                    this.prevWord.style.display !== "none"
+                ) {
                     this.previousWord();
                 }
                 break;
-            case 'Escape':
+            case "Escape":
                 this.hideHint();
                 break;
         }
@@ -489,31 +562,402 @@ class ReadingPractice {
 }
 
 // Initialize the practice when the page loads
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
     new ReadingPractice();
 });
 
 // Add entrance animations
-document.addEventListener('DOMContentLoaded', () => {
-    const welcomeCards = document.querySelectorAll('.info-card');
+document.addEventListener("DOMContentLoaded", () => {
+    const welcomeCards = document.querySelectorAll(".info-card");
     welcomeCards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        
+        card.style.opacity = "0";
+        card.style.transform = "translateY(20px)";
+
         setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
+            card.style.transition = "all 0.6s ease";
+            card.style.opacity = "1";
+            card.style.transform = "translateY(0)";
         }, index * 200 + 500);
     });
-    
-    const startBtn = document.querySelector('.start-btn');
-    startBtn.style.opacity = '0';
-    startBtn.style.transform = 'translateY(20px)';
-    
+
+    const startBtn = document.querySelector(".start-btn");
+    startBtn.style.opacity = "0";
+    startBtn.style.transform = "translateY(20px)";
+
     setTimeout(() => {
-        startBtn.style.transition = 'all 0.6s ease';
-        startBtn.style.opacity = '1';
-        startBtn.style.transform = 'translateY(0)';
+        startBtn.style.transition = "all 0.6s ease";
+        startBtn.style.opacity = "1";
+        startBtn.style.transform = "translateY(0)";
     }, 1200);
 });
+
+// ===== EYE TRACKING FUNCTIONALITY =====
+// WebGazer Eye Tracking Implementation
+let isCalibrated = false;
+let gazeData = [];
+let calibrationStarted = false;
+
+function initializeEyeTracking() {
+    console.log("🦊 Initializing eye tracking...");
+
+    // Initialize webgazer with proper settings
+    webgazer
+        .setRegression("ridge") // Use ridge regression
+        .setTracker("TFFacemesh") // Use TensorFlow Facemesh for better accuracy
+        .setGazeListener(function (data, elapsedTime) {
+            if (data == null) {
+                return;
+            }
+
+            // Only process gaze data after calibration
+            if (!isCalibrated) {
+                return;
+            }
+
+            const x = data.x;
+            const y = data.y;
+
+            // Store recent gaze data for smoothing
+            gazeData.push({ x, y, time: Date.now() });
+
+            // Keep only last 10 points
+            if (gazeData.length > 10) {
+                gazeData.shift();
+            }
+
+            // Calculate smoothed position (average of recent points)
+            const smoothedX =
+                gazeData.reduce((sum, d) => sum + d.x, 0) / gazeData.length;
+            const smoothedY =
+                gazeData.reduce((sum, d) => sum + d.y, 0) / gazeData.length;
+
+            // Find the element at the gaze position
+            const element = document.elementFromPoint(smoothedX, smoothedY);
+
+            if (element) {
+                // Get the text content of the element being looked at
+                const textContent = element.textContent.trim();
+
+                // Only log if there's actual text content and it's not too long
+                if (
+                    textContent &&
+                    textContent.length > 0 &&
+                    textContent.length < 100
+                ) {
+                    // Split into words and find the closest word to the gaze point
+                    const words = extractWordsFromElement(
+                        element,
+                        smoothedX,
+                        smoothedY
+                    );
+
+                    if (words && words.length > 0) {
+                        console.log("👁️ Looking at word:", words);
+                    }
+                }
+            }
+        })
+        .saveDataAcrossSessions(true)
+        .begin();
+
+    // Configure webgazer settings
+    webgazer
+        .showVideoPreview(true) // Show video preview for calibration
+        .showPredictionPoints(true) // Show where the user is looking
+        .applyKalmanFilter(true); // Smoothing filter for better accuracy
+
+    // Wait for video to initialize, then show calibration
+    setTimeout(() => {
+        if (!calibrationStarted) {
+            showCalibrationScreen();
+            calibrationStarted = true;
+        }
+    }, 2000);
+}
+
+function showCalibrationScreen() {
+    console.log("📋 Showing calibration screen...");
+
+    // Create calibration overlay
+    const calibrationDiv = document.createElement("div");
+    calibrationDiv.id = "calibrationScreen";
+    calibrationDiv.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0, 0, 0, 0.9); z-index: 10000; color: white;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                        text-align: center; max-width: 600px; padding: 20px;">
+                <h2 style="font-size: 2em; margin-bottom: 20px;">🎯 Eye Tracking Calibration</h2>
+                <p style="font-size: 1.2em; margin-bottom: 15px;">
+                    Click on each dot that appears and STARE at it for 2 seconds.<br>
+                    Keep your head still and only move your eyes.
+                </p>
+                <p style="font-size: 1em; margin-bottom: 30px; color: #aaa;">
+                    Make sure your face is visible in the video preview in the corner.
+                </p>
+                <div id="calibrationProgress" style="font-size: 1.5em; margin-bottom: 20px;">
+                    Point <span id="currentPoint">0</span> of 9
+                </div>
+                <button id="startCalibration" style="padding: 15px 30px; font-size: 1.2em; 
+                        background: #4CAF50; color: white; border: none; border-radius: 5px; 
+                        cursor: pointer;">
+                    Start Calibration
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(calibrationDiv);
+
+    document
+        .getElementById("startCalibration")
+        .addEventListener("click", startCalibration);
+}
+
+function startCalibration() {
+    const calibrationScreen = document.getElementById("calibrationScreen");
+    const startButton = document.getElementById("startCalibration");
+    startButton.style.display = "none";
+
+    // Define 9 calibration points (3x3 grid)
+    const points = [
+        { x: 10, y: 10 }, // Top-left
+        { x: 50, y: 10 }, // Top-center
+        { x: 90, y: 10 }, // Top-right
+        { x: 10, y: 50 }, // Middle-left
+        { x: 50, y: 50 }, // Center
+        { x: 90, y: 50 }, // Middle-right
+        { x: 10, y: 90 }, // Bottom-left
+        { x: 50, y: 90 }, // Bottom-center
+        { x: 90, y: 90 }, // Bottom-right
+    ];
+
+    let currentPointIndex = 0;
+
+    function showNextPoint() {
+        if (currentPointIndex >= points.length) {
+            finishCalibration();
+            return;
+        }
+
+        // Update progress
+        document.getElementById("currentPoint").textContent =
+            currentPointIndex + 1;
+
+        const point = points[currentPointIndex];
+
+        // Create calibration dot
+        const dot = document.createElement("div");
+        dot.className = "calibration-dot";
+        dot.style.cssText = `
+            position: fixed;
+            left: ${point.x}%;
+            top: ${point.y}%;
+            width: 30px;
+            height: 30px;
+            background: red;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 10001;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            animation: pulse 1s infinite;
+        `;
+
+        calibrationScreen.appendChild(dot);
+
+        // Click handler
+        dot.addEventListener("click", function () {
+            // Change color to indicate recording
+            this.style.background = "yellow";
+
+            // Record gaze data for this point
+            const startTime = Date.now();
+            const recordDuration = 2000; // 2 seconds
+
+            const recordInterval = setInterval(() => {
+                const rect = dot.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                // Manually add calibration point to webgazer
+                webgazer.recordScreenPosition(centerX, centerY);
+
+                if (Date.now() - startTime >= recordDuration) {
+                    clearInterval(recordInterval);
+                    dot.style.background = "green";
+
+                    setTimeout(() => {
+                        dot.remove();
+                        currentPointIndex++;
+                        showNextPoint();
+                    }, 300);
+                }
+            }, 100);
+        });
+    }
+
+    showNextPoint();
+}
+
+function finishCalibration() {
+    console.log("✅ Calibration complete!");
+    isCalibrated = true;
+
+    const calibrationScreen = document.getElementById("calibrationScreen");
+    calibrationScreen.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0, 0, 0, 0.9); z-index: 10000; color: white; 
+                    display: flex; align-items: center; justify-content: center;">
+            <div style="text-align: center;">
+                <h2 style="font-size: 2.5em; margin-bottom: 20px;">✅ Calibration Complete!</h2>
+                <p style="font-size: 1.3em; margin-bottom: 30px;">
+                    Eye tracking is now active.<br>
+                    Check the console (F12) to see which words you're looking at.
+                </p>
+                <button id="closeCalibration" style="padding: 15px 30px; font-size: 1.2em; 
+                        background: #4CAF50; color: white; border: none; border-radius: 5px; 
+                        cursor: pointer; margin-bottom: 20px;">
+                    Start Reading
+                </button>
+                <br>
+                <button id="toggleVideoBtn" style="padding: 10px 20px; font-size: 1em; 
+                        background: #2196F3; color: white; border: none; border-radius: 5px; 
+                        cursor: pointer;">
+                    Hide Video Preview
+                </button>
+            </div>
+        </div>
+    `;
+
+    document
+        .getElementById("closeCalibration")
+        .addEventListener("click", () => {
+            calibrationScreen.remove();
+
+            // Add floating toggle button for video preview
+            addVideoToggleButton();
+
+            console.log(
+                "👁️ Eye tracking active. Looking at words will be logged to console."
+            );
+        });
+
+    document.getElementById("toggleVideoBtn").addEventListener("click", () => {
+        const currentlyShowing = webgazer.params.showVideo;
+        webgazer.showVideoPreview(!currentlyShowing);
+        document.getElementById("toggleVideoBtn").textContent = currentlyShowing
+            ? "Show Video Preview"
+            : "Hide Video Preview";
+    });
+}
+
+// Add a floating button to toggle video preview
+function addVideoToggleButton() {
+    const toggleBtn = document.createElement("button");
+    toggleBtn.id = "floatingVideoToggle";
+    toggleBtn.innerHTML = `
+        <span id="toggleBtnText">👁️ Hide Video</span>
+    `;
+    toggleBtn.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 12px 20px;
+        background: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    `;
+
+    toggleBtn.addEventListener("mouseenter", () => {
+        toggleBtn.style.transform = "scale(1.05)";
+        toggleBtn.style.boxShadow = "0 6px 16px rgba(0, 0, 0, 0.4)";
+    });
+
+    toggleBtn.addEventListener("mouseleave", () => {
+        toggleBtn.style.transform = "scale(1)";
+        toggleBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.3)";
+    });
+
+    let videoVisible = true;
+    toggleBtn.addEventListener("click", () => {
+        videoVisible = !videoVisible;
+        webgazer.showVideoPreview(videoVisible);
+        document.getElementById("toggleBtnText").textContent = videoVisible
+            ? "👁️ Hide Video"
+            : "👁️ Show Video";
+
+        console.log(
+            videoVisible ? "📹 Video preview shown" : "📹 Video preview hidden"
+        );
+    });
+
+    document.body.appendChild(toggleBtn);
+}
+
+// Extract words from an element based on gaze position
+function extractWordsFromElement(element, x, y) {
+    const text = element.textContent.trim();
+
+    // If it's a short text node (likely a single word or phrase), return it
+    if (text.split(/\s+/).length <= 5) {
+        return text;
+    }
+
+    // For longer text, try to find the specific word being looked at
+    // This is a simplified approach - could be enhanced with more precise text positioning
+    const rect = element.getBoundingClientRect();
+    const relativeX = x - rect.left;
+    const relativeY = y - rect.top;
+
+    // Get words from the element
+    const words = text.split(/\s+/).filter((word) => word.length > 0);
+
+    // Calculate approximate word position (simplified)
+    // In a production app, you'd want to use Range and getBoundingClientRect for each word
+    const estimatedWordIndex = Math.floor(
+        (relativeX / rect.width) * words.length
+    );
+    const wordIndex = Math.max(
+        0,
+        Math.min(estimatedWordIndex, words.length - 1)
+    );
+
+    return words[wordIndex] || text;
+}
+
+// Function to pause/resume eye tracking
+function toggleEyeTracking(pause = true) {
+    if (pause) {
+        webgazer.pause();
+        console.log("⏸️ Eye tracking paused");
+    } else {
+        webgazer.resume();
+        console.log("▶️ Eye tracking resumed");
+    }
+}
+
+// Function to hide/show video preview
+function toggleVideoPreview(show = true) {
+    webgazer.showVideoPreview(show);
+}
+
+// Function to hide/show prediction points
+function togglePredictionPoints(show = true) {
+    webgazer.showPredictionPoints(show);
+}
+
+// Add CSS animation for calibration dots
+const eyeTrackingStyle = document.createElement("style");
+eyeTrackingStyle.textContent = `
+    @keyframes pulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); }
+        50% { transform: translate(-50%, -50%) scale(1.2); }
+    }
+`;
+document.head.appendChild(eyeTrackingStyle);
