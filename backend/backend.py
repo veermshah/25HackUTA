@@ -10,8 +10,11 @@ import re
 import string
 import base64
 from datetime import datetime, date, timedelta
+from elevenlabs.client import ElevenLabs
+from elevenlabs.play import play
 
 load_dotenv()
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
 gemini_client = genai.Client() # Uses the GEMINI_API_KEY env var
 db = firestore.Client()
@@ -101,29 +104,21 @@ def text_to_speech():
     print("Motivational message:", motivational_message)
     try:
         # Initialize TTS client
-        client = texttospeech.TextToSpeechClient()
+        client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
 
-        synthesis_input = texttospeech.SynthesisInput(text=motivational_message)
-
-        voice = texttospeech.VoiceSelectionParams(
-            language_code="en-US",
-            name="en-US-Chirp-HD-F"
+        audio_bytes = client.text_to_speech.convert(
+            text=motivational_message,
+            voice_id="F7hCTbeEDbm7osolS21j",
+            model_id="eleven_multilingual_v2",  # or another model
+            output_format="mp3_44100_128"
         )
 
-        audio_config = texttospeech.AudioConfig(
-            audio_encoding=texttospeech.AudioEncoding.MP3
-        )
+        # play(audio_bytes)
 
-        tts_response = client.synthesize_speech(
-            input=synthesis_input,
-            voice=voice,
-            audio_config=audio_config
-        )
+        audio_bytes = b"".join(audio_bytes)
+        audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
 
-        audio_base64 = base64.b64encode(tts_response.audio_content).decode('utf-8')
-
-        print(motivational_message)
-        # Use jsonify to ensure proper headers and CORS
+        print(audio_bytes)
         return {"message": motivational_message, "audio": audio_base64}, 200
     except Exception as e:
         print("Error during TTS:", str(e))
