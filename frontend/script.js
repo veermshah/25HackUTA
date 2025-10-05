@@ -112,7 +112,7 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     });
 });
 const greetings = [
-    "Welcome to your focused reading space 🦊",
+    "Welcome to your focused reading space",
     "Ready to practice at your own pace? 📖",
     "A calm place to build your reading skills ✨",
     "Your reading journey starts here 📚",

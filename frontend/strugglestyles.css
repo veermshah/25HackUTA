@@ -73,6 +73,14 @@ body {
     cursor: pointer;
 }
 
+.nav-logo .logo-image {
+    height: 30px !important;
+    width: auto;
+    max-width: 150px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 .logo-icon {
     font-size: 2rem;
 }

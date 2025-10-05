@@ -36,7 +36,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 2rem;
 }
@@ -49,12 +49,11 @@ body {
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(20px);
     z-index: 1000;
-    border-bottom: 1px solid var(--border);
     box-shadow: var(--shadow);
 }
 
 .nav-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 2rem;
     display: flex;
@@ -73,6 +72,14 @@ body {
     cursor: pointer;
 }
 
+.nav-logo .logo-image {
+    height: 30px !important;
+    width: auto;
+    max-width: 150px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 .logo-icon {
     font-size: 2rem;
 }
@@ -89,7 +96,7 @@ body {
     font-size: 1.25rem;
     cursor: pointer;
     padding: 0.5rem 1rem;
-    border-radius: 10px;
+    /* border-radius: 10px; */
     transition: all 0.3s ease;
 }
 
@@ -160,8 +167,7 @@ body {
     background: white;
     padding: 2rem;
     border-radius: 20px;
-    box-shadow: var(--shadow-md);
-    border: 2px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     gap: 1.5rem;
@@ -170,7 +176,7 @@ body {
 
 .info-card:hover {
     transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .info-icon {
@@ -224,8 +230,7 @@ body {
     background: white;
     padding: 2rem;
     border-radius: 20px;
-    box-shadow: var(--shadow-md);
-    border: 2px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     margin-bottom: 2rem;
 }
 
@@ -297,8 +302,7 @@ body {
     background: white;
     border-radius: 25px;
     padding: 3rem;
-    box-shadow: var(--shadow-lg);
-    border: 2px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .stage-header {
@@ -331,7 +335,7 @@ body {
     padding: 2rem;
     background: var(--light-orange);
     border-radius: 20px;
-    border: 2px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .reading-controls,
@@ -487,7 +491,7 @@ body {
     background: var(--light-orange);
     padding: 2rem;
     border-radius: 20px;
-    border: 2px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .sentence-text {
@@ -525,7 +529,7 @@ body {
     background: var(--light-orange);
     padding: 2rem;
     border-radius: 20px;
-    border: 2px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .word-display {
@@ -558,7 +562,7 @@ body {
     background: white;
     padding: 1.5rem;
     border-radius: 15px;
-    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .word-meaning h4,
@@ -626,7 +630,7 @@ body {
     background: var(--light-orange);
     padding: 2rem;
     border-radius: 20px;
-    border: 2px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .stat-value {
@@ -668,8 +672,7 @@ body {
     padding: 2rem;
     max-width: 500px;
     width: 90%;
-    box-shadow: var(--shadow-lg);
-    border: 2px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .hint-header {
@@ -787,3 +790,4 @@ body {
         padding: 1.5rem;
     }
 }
+

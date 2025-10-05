@@ -517,3 +517,4 @@ document.addEventListener('DOMContentLoaded', () => {
         startBtn.style.transform = 'translateY(0)';
     }, 1200);
 });
+

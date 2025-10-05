@@ -57,13 +57,140 @@ const userData = {
     accuracy: 87,
     level: "🏆 Gold",
     stars: 156,
-    streakDays: 7,
+    streakDays: 0, // Will be calculated dynamically
     todayProgress: 75, // percentage
     wordsRemaining: 15,
 };
 
+// Streak tracking system
+const streakData = {
+    lastPracticeDate: null,
+    practiceHistory: [], // Array of date strings in YYYY-MM-DD format
+    currentStreak: 0,
+    
+    // Initialize from localStorage or create new
+    init() {
+        const savedData = localStorage.getItem('dyslexicjit_streak_data');
+        if (savedData) {
+            const parsed = JSON.parse(savedData);
+            this.lastPracticeDate = parsed.lastPracticeDate;
+            this.practiceHistory = parsed.practiceHistory || [];
+            this.currentStreak = parsed.currentStreak || 0;
+        } else {
+            // Initialize with some sample data for demo purposes
+            const today = new Date();
+            this.practiceHistory = [];
+            
+            // Add practice days for the last 6 days (not including today)
+            for (let i = 6; i >= 1; i--) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+                this.practiceHistory.push(this.formatDate(date));
+            }
+            
+            this.lastPracticeDate = this.formatDate(new Date(today.getTime() - 24 * 60 * 60 * 1000)); // Yesterday
+            this.calculateStreak();
+            this.save();
+        }
+        
+        // Always recalculate streak on init to handle date changes
+        this.calculateStreak();
+    },
+    
+    // Save to localStorage
+    save() {
+        localStorage.setItem('dyslexicjit_streak_data', JSON.stringify({
+            lastPracticeDate: this.lastPracticeDate,
+            practiceHistory: this.practiceHistory,
+            currentStreak: this.currentStreak
+        }));
+    },
+    
+    // Format date as YYYY-MM-DD
+    formatDate(date) {
+        return date.getFullYear() + '-' + 
+               String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(date.getDate()).padStart(2, '0');
+    },
+    
+    // Add a practice session for today
+    addPracticeToday() {
+        const today = this.formatDate(new Date());
+        if (!this.practiceHistory.includes(today)) {
+            this.practiceHistory.push(today);
+            this.practiceHistory.sort(); // Keep dates sorted
+            this.lastPracticeDate = today;
+            this.calculateStreak();
+            this.save();
+        }
+    },
+    
+    // Calculate current streak
+    calculateStreak() {
+        if (this.practiceHistory.length === 0) {
+            this.currentStreak = 0;
+            return;
+        }
+        
+        const today = new Date();
+        const todayStr = this.formatDate(today);
+        const yesterdayStr = this.formatDate(new Date(today.getTime() - 24 * 60 * 60 * 1000));
+        
+        // Sort practice history in ascending order
+        const sortedHistory = [...this.practiceHistory].sort();
+        
+        let streak = 0;
+        
+        // Check if streak is still alive (practiced today or yesterday)
+        const hasToday = sortedHistory.includes(todayStr);
+        const hasYesterday = sortedHistory.includes(yesterdayStr);
+        
+        if (!hasToday && !hasYesterday) {
+            // Streak is broken
+            this.currentStreak = 0;
+            return;
+        }
+        
+        // Start from the most recent practice day and count backwards
+        let currentDate = new Date(today);
+        
+        // If they haven't practiced today, start from yesterday
+        if (!hasToday) {
+            currentDate.setDate(currentDate.getDate() - 1);
+        }
+        
+        // Count consecutive days backwards
+        while (true) {
+            const currentDateStr = this.formatDate(currentDate);
+            if (sortedHistory.includes(currentDateStr)) {
+                streak++;
+                currentDate.setDate(currentDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+        
+        this.currentStreak = streak;
+    },
+    
+    // Check if user practiced on a specific date
+    hasPracticedOn(date) {
+        const dateStr = this.formatDate(date);
+        return this.practiceHistory.includes(dateStr);
+    },
+    
+    // Get streak for display
+    getStreak() {
+        this.calculateStreak();
+        return this.currentStreak;
+    }
+};
+
 document.addEventListener("DOMContentLoaded", async function () {
     try {
+        // Initialize streak tracking system
+        streakData.init();
+        
         await configureClient();
         await handleRedirectCallback();
         generateCalendar();
@@ -100,7 +227,11 @@ function loadUserData() {
     document.getElementById("totalWords").textContent = userData.totalWords;
     document.getElementById("totalTime").textContent = userData.totalTime;
     document.getElementById("accuracy").textContent = userData.accuracy + "%";
-    document.getElementById("streakDays").textContent = userData.streakDays;
+    
+    // Update streak with dynamic data
+    const currentStreak = streakData.getStreak();
+    document.getElementById("streakDays").textContent = currentStreak;
+    userData.streakDays = currentStreak; // Update userData for other functions
 
     // Load progress
     const progressPercent = userData.todayProgress + "%";
@@ -119,6 +250,8 @@ function loadUserData() {
 }
 
 function animateStats() {
+    const currentStreak = streakData.getStreak();
+    
     const stats = [
         {
             element: document.getElementById("totalWords"),
@@ -131,7 +264,7 @@ function animateStats() {
         },
         {
             element: document.getElementById("streakDays"),
-            target: userData.streakDays,
+            target: currentStreak,
         },
     ];
 
@@ -168,46 +301,82 @@ function animateProgressBar() {
 
 function generateCalendar() {
     const calendarGrid = document.getElementById("calendarGrid");
+    calendarGrid.innerHTML = ""; // Clear existing content
+    
     const today = new Date();
-    const currentDay = today.getDay();
-
     const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
+    
+    // Show 4 weeks (28 days) - 3 weeks in the past + current week
+    const totalDays = 28;
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - 21); // Start 3 weeks ago
+    
+    // Find the start of the week for the start date (Sunday)
+    const startOfCalendar = new Date(startDate);
+    startOfCalendar.setDate(startDate.getDate() - startDate.getDay());
 
-    const practiceData = {
-        0: true, // Sunday
-        1: true, // Monday
-        2: true, // Tuesday
-        3: true, // Wednesday
-        4: true, // Thursday
-        5: true, // Friday
-        6: false, // Saturday (today - in progress)
-    };
-
-    // Generate calendar days
-    for (let i = 0; i < 7; i++) {
+    // Generate calendar days for 4 weeks
+    for (let i = 0; i < totalDays; i++) {
         const dayElement = document.createElement("div");
         dayElement.className = "calendar-day";
 
         const dayLabel = document.createElement("div");
         dayLabel.className = "calendar-day-label";
-        dayLabel.textContent = daysOfWeek[i];
+        dayLabel.textContent = daysOfWeek[i % 7];
 
         const dayNumber = document.createElement("div");
         dayNumber.className = "calendar-day-number";
 
-        // Calculate date
-        const date = new Date(today);
-        date.setDate(today.getDate() - currentDay + i);
+        // Calculate date for this day
+        const date = new Date(startOfCalendar);
+        date.setDate(startOfCalendar.getDate() + i);
         dayNumber.textContent = date.getDate();
 
-        // Determine status
-        if (i === currentDay) {
+        // Add month indicator for first day of month or if different from previous day
+        if (i > 0) {
+            const prevDate = new Date(startOfCalendar);
+            prevDate.setDate(startOfCalendar.getDate() + i - 1);
+            if (date.getMonth() !== prevDate.getMonth() || date.getDate() === 1) {
+                const monthLabel = document.createElement("div");
+                monthLabel.className = "calendar-month-label";
+                monthLabel.textContent = date.toLocaleDateString('en-US', { month: 'short' });
+                dayElement.appendChild(monthLabel);
+            }
+        } else if (date.getDate() === 1 || i === 0) {
+            const monthLabel = document.createElement("div");
+            monthLabel.className = "calendar-month-label";
+            monthLabel.textContent = date.toLocaleDateString('en-US', { month: 'short' });
+            dayElement.appendChild(monthLabel);
+        }
+
+        // Determine status based on real practice data
+        const hasPracticed = streakData.hasPracticedOn(date);
+        const isToday = date.toDateString() === today.toDateString();
+        const isPast = date < today && !isToday;
+        const isFuture = date > today;
+
+        if (isToday) {
             dayElement.classList.add("today");
-        } else if (i < currentDay && practiceData[i]) {
-            dayElement.classList.add("completed");
-        } else if (i < currentDay && !practiceData[i]) {
-            dayElement.classList.add("inactive");
+            // If user has completed today's goal, mark as completed
+            if (userData.todayProgress >= 100 || hasPracticed) {
+                dayElement.classList.add("completed");
+            }
+            // Scroll to today on initial load
+            setTimeout(() => {
+                dayElement.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'nearest', 
+                    inline: 'center' 
+                });
+            }, 100);
+        } else if (isPast) {
+            if (hasPracticed) {
+                dayElement.classList.add("completed");
+            } else {
+                dayElement.classList.add("inactive");
+            }
         } else {
+            // Future days
             dayElement.classList.add("inactive");
         }
 
@@ -337,10 +506,75 @@ avatarStyles.textContent = `
 `;
 document.head.appendChild(avatarStyles);
 
-if (userData.streakDays >= 7) {
+// Function to complete today's practice
+function completeTodaysPractice() {
+    // Mark today as completed
+    streakData.addPracticeToday();
+    userData.todayProgress = 100;
+    userData.wordsRemaining = 0;
+    
+    // Update UI
+    document.getElementById("progressPercent").textContent = "100%";
+    document.getElementById("progressFill").style.width = "100%";
+    
+    const progressText = document.querySelector(".progress-text");
+    progressText.textContent = "🎉 Daily goal completed! Great job!";
+    progressText.style.color = "var(--accent-coral)";
+    progressText.style.fontWeight = "700";
+    
+    // Recalculate and update streak display
+    streakData.calculateStreak();
+    const newStreak = streakData.getStreak();
+    document.getElementById("streakDays").textContent = newStreak;
+    userData.streakDays = newStreak;
+    
+    // Regenerate calendar to show today as completed
+    generateCalendar();
+    
+    // Show celebration notification
+    showNotification("🎉 Daily goal completed! Your streak is now " + newStreak + " days!");
+    
+    // Add fire animation if streak is 7 or more
+    if (newStreak >= 7) {
+        setTimeout(() => {
+            const streakIcon = document.querySelector(".streak-icon");
+            if (streakIcon) {
+                streakIcon.style.animation = "fire 0.5s ease infinite";
+            }
+        }, 500);
+    }
+}
+
+// Debug function to add practice for previous days (for testing)
+function addPracticeForDate(daysAgo) {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    const dateStr = streakData.formatDate(date);
+    
+    if (!streakData.practiceHistory.includes(dateStr)) {
+        streakData.practiceHistory.push(dateStr);
+        streakData.practiceHistory.sort();
+        streakData.calculateStreak(); // Recalculate streak
+        streakData.save();
+        generateCalendar(); // Refresh calendar
+        
+        const newStreak = streakData.getStreak();
+        document.getElementById("streakDays").textContent = newStreak;
+        userData.streakDays = newStreak;
+        
+        showNotification(`✅ Added practice for ${daysAgo} days ago. Streak: ${newStreak}`);
+    } else {
+        showNotification(`⚠️ Practice already recorded for ${daysAgo} days ago`);
+    }
+}
+
+// Check if streak should have fire animation
+if (streakData.getStreak() >= 7) {
     setTimeout(() => {
         const streakIcon = document.querySelector(".streak-icon");
-        streakIcon.style.animation = "fire 0.5s ease infinite";
+        if (streakIcon) {
+            streakIcon.style.animation = "fire 0.5s ease infinite";
+        }
     }, 1000);
 }
 
@@ -363,11 +597,30 @@ document.addEventListener("click", function (e) {
         const dayNumber = day.querySelector(".calendar-day-number").textContent;
 
         if (day.classList.contains("completed")) {
-            showNotification(`✅ Practiced on day ${dayNumber}!`);
+            if (day.classList.contains("today")) {
+                showNotification(`🎉 Today (${dayNumber}) - Practice completed!`);
+            } else {
+                showNotification(`✅ Day ${dayNumber} - Practice completed!`);
+            }
         } else if (day.classList.contains("today")) {
-            showNotification(
-                `📅 Today's practice: ${userData.todayProgress}% complete!`
-            );
+            const remaining = userData.todayProgress < 100 ? userData.wordsRemaining : 0;
+            if (remaining > 0) {
+                showNotification(
+                    `📅 Today (${dayNumber}): ${userData.todayProgress}% complete! ${remaining} words remaining.`
+                );
+            } else {
+                showNotification(`🎯 Today (${dayNumber}): Ready to practice!`);
+            }
+        } else if (day.classList.contains("inactive")) {
+            const today = new Date();
+            const currentDay = today.getDay();
+            const dayIndex = Array.from(day.parentNode.children).indexOf(day);
+            
+            if (dayIndex < currentDay) {
+                showNotification(`📅 Day ${dayNumber} - No practice recorded`);
+            } else {
+                showNotification(`📆 Day ${dayNumber} - Future date`);
+            }
         } else {
             showNotification(
                 `📆 Day ${dayNumber} - Keep building your streak!`
@@ -419,6 +672,28 @@ document.addEventListener("keydown", function (e) {
             window.location.href = "struggle.html";
         }
     }
+    
+    // Press 'C' to complete today's practice (for testing)
+    if (e.key === "c" || e.key === "C") {
+        if (e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
+            if (userData.todayProgress < 100) {
+                completeTodaysPractice();
+            } else {
+                showNotification("📅 Today's practice already completed!");
+            }
+        }
+    }
+    
+    // Press 'R' to reset streak data (for testing)
+    if (e.key === "r" || e.key === "R") {
+        if (e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA" && e.shiftKey) {
+            if (confirm("Are you sure you want to reset all streak data? This cannot be undone.")) {
+                localStorage.removeItem('dyslexicjit_streak_data');
+                streakData.init();
+                location.reload();
+            }
+        }
+    }
 });
 
 window.addEventListener("load", () => {
@@ -437,15 +712,34 @@ window.addEventListener("load", () => {
     });
 });
 
-console.log(
-    "%c🦊 Welcome to DyslexicJit!",
-    "color: #FF6B35; font-size: 20px; font-weight: bold;"
-);
+// Debug functions available in console
+window.debugStreak = {
+    complete: completeTodaysPractice,
+    addPractice: addPracticeForDate,
+    reset: () => {
+        localStorage.removeItem('dyslexicjit_streak_data');
+        location.reload();
+    },
+    show: () => {
+        console.log('Current streak:', streakData.getStreak());
+        console.log('Practice history:', streakData.practiceHistory);
+        console.log('Last practice:', streakData.lastPracticeDate);
+    }
+};
+
+    console.log(
+        "%c Welcome to DyslexicJit!",
+        "color: #FF6B35; font-size: 24px; font-weight: bold;"
+    );
 console.log(
     "%cKeep practicing and you'll become a reading champion! 📚",
     "color: #5A5A5A; font-size: 14px;"
 );
 console.log(
-    '%cKeyboard shortcuts: Press "P" for Practice, "S" for Struggle Words',
+    '%cKeyboard shortcuts: Press "C" to Complete Today\'s Practice, "Shift+R" to Reset Streak Data',
     "color: #FF8C42; font-size: 12px;"
+);
+console.log(
+    '%cDebug commands: debugStreak.complete(), debugStreak.reset(), debugStreak.show()',
+    "color: #00A86B; font-size: 12px;"
 );
