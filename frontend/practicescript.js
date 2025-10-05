@@ -6,6 +6,8 @@ class ReadingPractice {
         this.currentWordIndex = 0;
         this.starsEarned = 0;
         this.isRecording = false;
+        this.calibrationComplete = false; // Track calibration state
+        this.isCalibrating = false; // Track if currently calibrating
 
         // Practice content
         this.paragraph =
@@ -188,14 +190,209 @@ class ReadingPractice {
         document.addEventListener("keydown", (e) => this.handleKeyboard(e));
     }
 
-    startPractice() {
-        this.welcomeScreen.style.display = "none";
-        this.practiceInterface.style.display = "block";
-        this.showParagraphStage();
-        this.updateProgress();
+    async startPractice() {
+        // If calibration is not complete, start calibration first
+        if (!this.calibrationComplete) {
+            this.isCalibrating = true; // Set calibrating flag
+            this.startBtn.disabled = true;
+            this.startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing eye tracking...';
+            
+            // Initialize eye tracking and calibration
+            initializeEyeTracking();
+            return;
+        }
 
-        // Initialize eye tracking when practice starts
-        initializeEyeTracking();
+        // If calibration is complete, start the actual reading practice
+        try {
+            // Show loading state
+            this.startBtn.disabled = true;
+            this.startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating practice content...';
+            toggleEyeTracking(true); // Pause eye tracking during content generation
+            
+            // Generate content from API
+            await this.generatePracticeContent();
+            
+            // Start the practice
+            this.welcomeScreen.style.display = "none";
+            this.practiceInterface.style.display = "block";
+            this.showParagraphStage();
+            this.updateProgress();
+        } catch (error) {
+            console.error('Error generating practice content:', error);
+            // Reset button state
+            this.startBtn.disabled = false;
+            this.startBtn.innerHTML = '<i class="fas fa-play"></i> Start Reading Practice';
+            alert('Sorry, there was an error generating practice content. Please try again.');
+        }
+    }
+    
+    async generatePracticeContent() {
+        const baseUrl = 'http://127.0.0.1:5001/generate';
+        
+        try {
+            // Generate only the initial paragraph
+            const paragraphResponse = await fetch(`${baseUrl}?q=paragraph`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            });
+            
+            if (!paragraphResponse.ok) {
+                throw new Error(`Paragraph generation failed: ${paragraphResponse.status}`);
+            }
+            
+            const paragraphData = await paragraphResponse.json();
+            
+            // Update only the paragraph content
+            if (paragraphData && paragraphData.text) {
+                this.paragraph = paragraphData.text;
+                this.paragraphText.textContent = this.paragraph;
+            }
+            
+        } catch (error) {
+            console.error('API call failed:', error);
+            // Keep the default content if API fails
+            console.log('Using default practice content');
+        }
+    }
+
+    async generateSentencesFromRecording(audioBlob) {
+        const baseUrl = 'http://127.0.0.1:5001';
+        
+        try {
+            // Send audio to speech-to-text API
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'recording.mp3');
+            formData.append('json', this.paragraph);
+
+            const sttResponse = await fetch(`${baseUrl}/stt`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!sttResponse.ok) {
+                throw new Error(`Speech-to-text failed: ${sttResponse.status}`);
+            }
+
+            const sttData = await sttResponse.json();
+            
+            // Use the words from STT response to generate sentences
+            const sentenceResponse = await fetch(`${baseUrl}/generate?q=sentence`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    words: sttData.words || []
+                })
+            });
+
+            if (!sentenceResponse.ok) {
+                throw new Error(`Sentence generation failed: ${sentenceResponse.status}`);
+            }
+
+            const sentenceData = await sentenceResponse.json();
+
+            // Update sentences
+            if (sentenceData && sentenceData.sentences) {
+                this.sentences = sentenceData.sentences;
+            } else if (sentenceData && sentenceData.text) {
+                this.sentences = sentenceData.text
+                    .split(/[.!?]+/)
+                    .map(s => s.trim())
+                    .filter(s => s.length > 0)
+                    .map(s => s + '.');
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error generating sentences from recording:', error);
+            return false;
+        }
+    }
+
+    async generateWordsFromRecording(audioBlob) {
+        const baseUrl = 'http://127.0.0.1:5001';
+        
+        try {
+            // Send audio to speech-to-text API
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'recording.mp3');
+            formData.append('json', this.sentences[this.currentSentenceIndex]);
+
+            const sttResponse = await fetch(`${baseUrl}/stt`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!sttResponse.ok) {
+                throw new Error(`Speech-to-text failed: ${sttResponse.status}`);
+            }
+
+            const sttData = await sttResponse.json();
+            
+            // Use the words from STT response to generate word practice
+            const wordResponse = await fetch(`${baseUrl}/generate?q=word`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    words: sttData.words || []
+                })
+            });
+
+            if (!wordResponse.ok) {
+                throw new Error(`Word generation failed: ${wordResponse.status}`);
+            }
+
+            const wordData = await wordResponse.json();
+
+            // Update words
+            if (wordData && wordData.words) {
+                this.words = wordData.words.map((wordInfo, index) => {
+                    if (typeof wordInfo === 'string') {
+                        return {
+                            word: wordInfo,
+                            phonetics: `/${wordInfo}/`,
+                            meaning: `Practice word: ${wordInfo}`,
+                            context: `...${wordInfo}...`,
+                            hint: `Think about the word '${wordInfo}' and practice saying it slowly.`
+                        };
+                    } else {
+                        return wordInfo;
+                    }
+                });
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error generating words from recording:', error);
+            return false;
+        }
+    }
+    
+    extractWordsFromText(text) {
+        // Extract words from text, filter out common words
+        const words = text.toLowerCase()
+            .replace(/[^\w\s]/g, '')
+            .split(/\s+/)
+            .filter(word => word.length > 3)
+            .filter(word => !['this', 'that', 'with', 'have', 'will', 'been', 'from', 'they', 'know', 'want', 'been', 'good', 'much', 'some', 'time', 'very', 'when', 'come', 'here', 'just', 'like', 'long', 'make', 'many', 'over', 'such', 'take', 'than', 'them', 'well', 'were'].includes(word));
+        
+        // Remove duplicates and return
+        return [...new Set(words)];
+    }
+    
+    extractKeyWords(text) {
+        // Extract key words that are good for practice (longer, more complex words)
+        const words = this.extractWordsFromText(text)
+            .filter(word => word.length >= 5)
+            .slice(0, 6); // Limit to 6 words for practice
+        
+        return words.length > 0 ? words : ['explore', 'beautiful', 'adventure', 'interesting', 'wonderful', 'discover'];
     }
 
     updateProgress() {
@@ -285,15 +482,40 @@ class ReadingPractice {
         );
     }
 
-    recordParagraph() {
-        this.simulateRecording(this.paragraphRecordBtn, () => {
-            this.paragraphFeedback.style.display = "block";
-            this.starsEarned += 3;
-        });
+    async recordParagraph() {
+        try {
+            const audioBlob = await this.recordAudio(this.paragraphRecordBtn);
+            if (audioBlob) {
+                // Show processing state
+                this.paragraphRecordBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Processing...</span>';
+                this.paragraphRecordBtn.disabled = true;
+                
+                // Generate sentences based on the recording
+                const success = await this.generateSentencesFromRecording(audioBlob);
+                
+                if (success) {
+                    this.paragraphFeedback.style.display = 'block';
+                    this.starsEarned += 3;
+                } else {
+                    alert('Sorry, there was an error processing your recording. Using default sentences.');
+                }
+                
+                // Reset button
+                this.paragraphRecordBtn.innerHTML = '<i class="fas fa-microphone"></i><span>Try Again</span>';
+                this.paragraphRecordBtn.disabled = false;
+            }
+        } catch (error) {
+            console.error('Error recording paragraph:', error);
+            alert('Sorry, there was an error with the recording. Please try again.');
+        }
     }
 
     moveToSentenceStage() {
-        this.showSentenceStage();
+        if (this.sentences && this.sentences.length > 0) {
+            this.showSentenceStage();
+        } else {
+            alert('Please record the paragraph first to generate sentences for practice.');
+        }
     }
 
     // Sentence stage methods
@@ -322,11 +544,32 @@ class ReadingPractice {
         );
     }
 
-    recordSentence() {
-        this.simulateRecording(this.sentenceRecordBtn, () => {
-            this.sentenceFeedback.style.display = "block";
-            this.starsEarned += 2;
-        });
+    async recordSentence() {
+        try {
+            const audioBlob = await this.recordAudio(this.sentenceRecordBtn);
+            if (audioBlob) {
+                // Show processing state
+                this.sentenceRecordBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Processing...</span>';
+                this.sentenceRecordBtn.disabled = true;
+                
+                // Generate words based on the recording
+                const success = await this.generateWordsFromRecording(audioBlob);
+                
+                if (success) {
+                    this.sentenceFeedback.style.display = 'block';
+                    this.starsEarned += 2;
+                } else {
+                    alert('Sorry, there was an error processing your recording. Using default words.');
+                }
+                
+                // Reset button
+                this.sentenceRecordBtn.innerHTML = '<i class="fas fa-microphone"></i><span>Try Again</span>';
+                this.sentenceRecordBtn.disabled = false;
+            }
+        } catch (error) {
+            console.error('Error recording sentence:', error);
+            alert('Sorry, there was an error with the recording. Please try again.');
+        }
     }
 
     previousSentence() {
@@ -341,7 +584,12 @@ class ReadingPractice {
             this.currentSentenceIndex++;
             this.updateSentenceDisplay();
         } else {
-            this.showWordStage();
+            // Check if words have been generated from recording
+            if (this.words && this.words.length > 0 && this.words[0].word !== 'explore') {
+                this.showWordStage();
+            } else {
+                alert('Please record a sentence first to generate words for practice.');
+            }
         }
     }
 
@@ -400,11 +648,26 @@ class ReadingPractice {
         );
     }
 
-    recordWord() {
-        this.simulateRecording(this.wordRecordBtn, () => {
-            this.wordFeedback.style.display = "block";
-            this.starsEarned += 1;
-        });
+    async recordWord() {
+        try {
+            const audioBlob = await this.recordAudio(this.wordRecordBtn);
+            if (audioBlob) {
+                // Show processing state
+                this.wordRecordBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Processing...</span>';
+                this.wordRecordBtn.disabled = true;
+                
+                // For word practice, we just show feedback (no additional API call needed)
+                this.wordFeedback.style.display = 'block';
+                this.starsEarned += 1;
+                
+                // Reset button
+                this.wordRecordBtn.innerHTML = '<i class="fas fa-microphone"></i><span>Try Again</span>';
+                this.wordRecordBtn.disabled = false;
+            }
+        } catch (error) {
+            console.error('Error recording word:', error);
+            alert('Sorry, there was an error with the recording. Please try again.');
+        }
     }
 
     previousWord() {
@@ -442,6 +705,76 @@ class ReadingPractice {
     }
 
     // Utility methods
+    async recordAudio(button) {
+        try {
+            // Request microphone access
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // Create MediaRecorder
+            const mediaRecorder = new MediaRecorder(stream);
+            const audioChunks = [];
+            
+            // Update button to show recording state
+            const originalContent = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-stop"></i><span>Recording... (Click to stop)</span>';
+            button.disabled = false;
+            
+            // Collect audio data
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+            
+            // Handle recording completion
+            return new Promise((resolve, reject) => {
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                    
+                    // Stop all tracks to release microphone
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                    // Reset button
+                    button.innerHTML = originalContent;
+                    resolve(audioBlob);
+                };
+                
+                mediaRecorder.onerror = (event) => {
+                    // Stop all tracks to release microphone
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                    // Reset button
+                    button.innerHTML = originalContent;
+                    reject(new Error('Recording failed'));
+                };
+                
+                // Start recording
+                mediaRecorder.start();
+                
+                // Stop recording when button is clicked again
+                const stopRecording = () => {
+                    if (mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                        button.removeEventListener('click', stopRecording);
+                    }
+                };
+                
+                button.addEventListener('click', stopRecording);
+                
+                // Auto-stop after 30 seconds
+                setTimeout(() => {
+                    if (mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                        button.removeEventListener('click', stopRecording);
+                    }
+                }, 30000);
+            });
+            
+        } catch (error) {
+            console.error('Error accessing microphone:', error);
+            alert('Please allow microphone access to use this feature.');
+            return null;
+        }
+    }
+    
     simulateAudioPlayback(button, playingText, normalText) {
         const originalContent = button.innerHTML;
         button.innerHTML = `<i class="fas fa-volume-up"></i><span>${playingText}</span>`;
@@ -454,6 +787,7 @@ class ReadingPractice {
     }
 
     simulateRecording(button, callback) {
+        // This method is no longer used but kept for compatibility
         const originalContent = button.innerHTML;
         button.innerHTML =
             '<i class="fas fa-stop"></i><span>Recording...</span>';
@@ -563,7 +897,7 @@ class ReadingPractice {
 
 // Initialize the practice when the page loads
 document.addEventListener("DOMContentLoaded", () => {
-    new ReadingPractice();
+    window.readingPracticeInstance = new ReadingPractice();
 });
 
 // Add entrance animations
@@ -801,6 +1135,10 @@ function startCalibration() {
 function finishCalibration() {
     console.log("✅ Calibration complete!");
     isCalibrated = true;
+    toggleEyeTracking(true); // Pause eye tracking during content generation
+
+    // Hide prediction points after calibration
+    webgazer.showPredictionPoints(false);
 
     const calibrationScreen = document.getElementById("calibrationScreen");
     calibrationScreen.innerHTML = `
@@ -811,12 +1149,12 @@ function finishCalibration() {
                 <h2 style="font-size: 2.5em; margin-bottom: 20px;">✅ Calibration Complete!</h2>
                 <p style="font-size: 1.3em; margin-bottom: 30px;">
                     Eye tracking is now active.<br>
-                    Check the console (F12) to see which words you're looking at.
+                    Ready to start your reading practice!
                 </p>
                 <button id="closeCalibration" style="padding: 15px 30px; font-size: 1.2em; 
                         background: #4CAF50; color: white; border: none; border-radius: 5px; 
                         cursor: pointer; margin-bottom: 20px;">
-                    Start Reading
+                    Continue to Practice
                 </button>
                 <br>
                 <button id="toggleVideoBtn" style="padding: 10px 20px; font-size: 1em; 
@@ -836,18 +1174,51 @@ function finishCalibration() {
             // Add floating toggle button for video preview
             addVideoToggleButton();
 
+            // Update the start button to show "Start Reading Practice"
+            const startBtn = document.getElementById("startBtn");
+            const readingPractice = window.readingPracticeInstance;
+            
+            console.log("🔄 Updating button after calibration...");
+            console.log("📊 Initial state:", {
+                startBtn: !!startBtn,
+                readingPractice: !!readingPractice,
+                calibrationComplete: readingPractice ? readingPractice.calibrationComplete : 'N/A'
+            });
+            
+            if (readingPractice && startBtn) {
+                readingPractice.calibrationComplete = true;
+                readingPractice.isCalibrating = false;  // Reset calibrating flag
+                
+                // Force update the button state
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i><span>Start Reading Practice</span>';
+                
+                console.log("✅ Button updated - ready for reading practice");
+                console.log("📊 Final state:", {
+                    calibrationComplete: readingPractice.calibrationComplete,
+                    isCalibrating: readingPractice.isCalibrating,
+                    buttonDisabled: startBtn.disabled,
+                    buttonHTML: startBtn.innerHTML
+                });
+            } else {
+                console.error("❌ Failed to update button:", {
+                    startBtn: !!startBtn,
+                    readingPractice: !!readingPractice
+                });
+            }
+
             console.log(
-                "👁️ Eye tracking active. Looking at words will be logged to console."
+                "👁️ Eye tracking active. Ready to start reading practice!"
             );
         });
 
     document.getElementById("toggleVideoBtn").addEventListener("click", () => {
-        const currentlyShowing = webgazer.params.showVideo;
-        webgazer.showVideoPreview(!currentlyShowing);
-        document.getElementById("toggleVideoBtn").textContent = currentlyShowing
-            ? "Show Video Preview"
-            : "Hide Video Preview";
+        webgazer.showVideoPreview(false);
+        document.getElementById("toggleVideoBtn").textContent = "Video Hidden";
+        document.getElementById("toggleVideoBtn").disabled = true;
     });
+
+    toggleEyeTracking(true); // Pause eye tracking during content generation
 }
 
 // Add a floating button to toggle video preview
@@ -884,13 +1255,36 @@ function addVideoToggleButton() {
         toggleBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.3)";
     });
 
-    let videoVisible = true;
+    // Check current video state from webgazer
+    let videoVisible = webgazer.params.showVideo !== false;
+    
+    // Update initial button state
+    setTimeout(() => {
+        const btnText = document.getElementById("toggleBtnText");
+        if (btnText) {
+            if (videoVisible) {
+                btnText.textContent = "👁️ Hide Video";
+                toggleBtn.style.background = "#2196F3";
+            } else {
+                btnText.textContent = "👁️ Show Video";
+                toggleBtn.style.background = "#FF5722";
+            }
+        }
+    }, 100);
+
     toggleBtn.addEventListener("click", () => {
         videoVisible = !videoVisible;
         webgazer.showVideoPreview(videoVisible);
-        document.getElementById("toggleBtnText").textContent = videoVisible
-            ? "👁️ Hide Video"
-            : "👁️ Show Video";
+        
+        // Update button text and style
+        const btnText = document.getElementById("toggleBtnText");
+        if (videoVisible) {
+            btnText.textContent = "👁️ Hide Video";
+            toggleBtn.style.background = "#2196F3";
+        } else {
+            btnText.textContent = "👁️ Show Video";
+            toggleBtn.style.background = "#FF5722";
+        }
 
         console.log(
             videoVisible ? "📹 Video preview shown" : "📹 Video preview hidden"
