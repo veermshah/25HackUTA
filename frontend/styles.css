@@ -79,6 +79,13 @@ body {
     padding: 0 !important;
 }
 
+.nav-logo .logo-icon-img {
+    height: 35px;
+    width: 35px;
+    object-fit: contain;
+    margin-right: 0.5rem;
+}
+
 .logo-icon {
     font-size: 2rem;
 }
