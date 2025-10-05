@@ -1,0 +1,562 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Fox-Themed Orange Palette */
+    --primary-orange: #FF8C42;
+    --secondary-orange: #FFB366;
+    --dark-orange: #E67332;
+    --accent-coral: #FF6B35;
+    --dark-coral: #D45428;
+    --light-orange: #FFE5D4;
+    --cream: #FFF8F0;
+    --text-primary: #2D2D2D;
+    --text-secondary: #5A5A5A;
+    --background: #FFFBF7;
+    --card-background: #FFFFFF;
+    --border: #FFD4B8;
+    --shadow: 0 4px 12px rgba(255, 107, 53, 0.08);
+    --shadow-md: 0 8px 16px rgba(255, 107, 53, 0.12);
+    --shadow-lg: 0 12px 24px rgba(255, 107, 53, 0.15);
+}
+
+body {
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--background);
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* Navigation */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    z-index: 1000;
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-coral);
+    cursor: pointer;
+}
+
+.logo-icon {
+    font-size: 2rem;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+    background: var(--light-orange);
+    color: var(--accent-coral);
+}
+
+/* Main Layout */
+.profile-main {
+    padding-top: 100px;
+    min-height: 100vh;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 2rem;
+    padding-bottom: 3rem;
+}
+
+/* Welcome Section */
+.welcome-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.welcome-card {
+    background: white;
+    border-radius: 25px;
+    padding: 3rem;
+    box-shadow: var(--shadow-md);
+    border: 2px solid var(--border);
+}
+
+.fox-mascot {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+}
+
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--accent-coral);
+    margin-bottom: 0.5rem;
+}
+
+.welcome-title span {
+    color: var(--primary-orange);
+}
+
+.welcome-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-bottom: 3rem;
+}
+
+/* Quick Stats */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: var(--light-orange);
+    border-radius: 20px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-coral);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+    border: 2px solid transparent;
+}
+
+.struggle-btn {
+    background: linear-gradient(135deg, #FFE5D4 0%, #FFD4B8 100%);
+    border-color: var(--primary-orange);
+}
+
+.struggle-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(135deg, #FFD4B8 0%, #FFB366 100%);
+}
+
+.practice-btn {
+    background: linear-gradient(135deg, #FF8C42 0%, #FF6B35 100%);
+    color: white;
+}
+
+.practice-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(135deg, #E67332 0%, #D45428 100%);
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.action-btn i:first-child {
+    font-size: 2.5rem;
+}
+
+.struggle-btn i:first-child {
+    color: var(--accent-coral);
+}
+
+.practice-btn i:first-child {
+    color: white;
+}
+
+.btn-text h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.struggle-btn .btn-text h3 {
+    color: var(--text-primary);
+}
+
+.practice-btn .btn-text h3 {
+    color: white;
+}
+
+.btn-text p {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+.struggle-btn .btn-text p {
+    color: var(--text-secondary);
+}
+
+.practice-btn .btn-text p {
+    color: white;
+}
+
+.btn-arrow {
+    font-size: 1.5rem;
+    opacity: 0.6;
+}
+
+/* Sidebar */
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Profile Card */
+.profile-card {
+    background: white;
+    border-radius: 25px;
+    padding: 2.5rem;
+    box-shadow: var(--shadow-md);
+    border: 2px solid var(--border);
+    text-align: center;
+}
+
+.profile-header {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-orange), var(--accent-coral));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 auto;
+    box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+}
+
+.edit-btn {
+    position: absolute;
+    top: 0;
+    right: calc(50% - 70px);
+    background: var(--accent-coral);
+    color: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+    background: var(--dark-coral);
+    transform: scale(1.1);
+}
+
+.profile-name {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.profile-grade {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.profile-stat {
+    padding: 1rem;
+    background: var(--light-orange);
+    border-radius: 15px;
+}
+
+.profile-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-coral);
+    margin-bottom: 0.25rem;
+}
+
+.profile-stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.achievements h3 {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.badge-list {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.badge {
+    font-size: 2rem;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.badge:hover {
+    transform: scale(1.2);
+}
+
+/* Streak Card */
+.streak-card {
+    background: white;
+    border-radius: 25px;
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+    border: 2px solid var(--border);
+}
+
+.streak-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.streak-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+.streak-icon {
+    font-size: 1.5rem;
+}
+
+.streak-count {
+    text-align: right;
+}
+
+.streak-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--accent-coral);
+    display: block;
+    line-height: 1;
+}
+
+.streak-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Progress Bar */
+.progress-bar-container {
+    margin-bottom: 2rem;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.progress-bar {
+    height: 12px;
+    background: var(--light-orange);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-orange), var(--accent-coral));
+    border-radius: 10px;
+    transition: width 1s ease;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* Calendar */
+.calendar h4 {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.calendar-day-label {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.calendar-day-number {
+    font-size: 0.9rem;
+}
+
+.calendar-day.empty {
+    background: transparent;
+}
+
+.calendar-day.inactive {
+    background: #F5F5F5;
+    color: #CACACA;
+}
+
+.calendar-day.completed {
+    background: linear-gradient(135deg, var(--primary-orange), var(--accent-coral));
+    color: white;
+}
+
+.calendar-day.today {
+    background: var(--light-orange);
+    border: 2px solid var(--accent-coral);
+    color: var(--accent-coral);
+}
+
+.calendar-day:hover:not(.empty) {
+    transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar-section {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .welcome-title {
+        font-size: 2rem;
+    }
+    
+    .quick-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .calendar-grid {
+        gap: 0.25rem;
+    }
+}
